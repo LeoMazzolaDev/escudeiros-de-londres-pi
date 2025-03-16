@@ -18,6 +18,11 @@ namespace kingMe.cs
         private int idJogador;
         private string senhaJogador;
         public string nomeGrupo = "Escudeiros de Londres";
+
+
+        private List<string> jogadores = new List<string> { "Jogador 1", "Jogador 2", "Jogador 3", "Jogador 4" };
+        private int vezAtual = 0;  
+
         public Form1()
         {
             InitializeComponent();
@@ -36,14 +41,13 @@ namespace kingMe.cs
 
         private void btnCriarPartida_Click(object sender, EventArgs e)
         {
-
             txtNomeGrupo.Text = nomeGrupo;
             string nomePartida = txtNomePartida.Text;
             string senha = txtSenha.Text;
             string grupo = txtNomeGrupo.Text;
 
             string retorno = Jogo.CriarPartida(nomePartida, senha, grupo);
-            if (retorno.Substring(0, 4) == "ERRO")
+            if (retorno.Substring(0, 1) == "E")
             {
                 MessageBox.Show("Ocorreu um erro: \n" + retorno, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -95,6 +99,8 @@ namespace kingMe.cs
             }
         }
 
+
+
         private void btnEntrar_Click(object sender, EventArgs e)
         {
             pnlEntrarPartida.Visible = false;
@@ -130,6 +136,7 @@ namespace kingMe.cs
             }
         }
 
+
         private void btnJogar_Click_1(object sender, EventArgs e)
         {
             pnlMenuInicial.Visible = false;
@@ -151,7 +158,16 @@ namespace kingMe.cs
         private void btnIniciar_Click(object sender, EventArgs e)
         {
             pnlLobby.Visible = false;
-            pnlPartida.Visible = true;  
+            pnlPartida.Visible = true;
+
+            string retorno = Jogo.ListarPersonagens();
+            retorno = retorno.Replace("\r", "");
+            string[] nomePersonagens = retorno.Split('\n');
+            for (int i = 0; i < nomePersonagens.Length; i++)
+            {
+                lstNomePersonagens.Items.Add(nomePersonagens[i]);
+            }
+
         }
 
         private void btnListarCartas_Click(object sender, EventArgs e)
@@ -191,6 +207,73 @@ namespace kingMe.cs
         private void btnConfiguracoes_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void lstNomePersonagens_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pnlPartida_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+         private void btnColocarPersonagem_Click(object sender, EventArgs e)
+        {
+            string setor = txtSetor.Text;
+            string personagem = txtPersonagem.Text.ToUpper();
+
+            Dictionary<char, string> nomes = new Dictionary<char, string>
+            {
+                { 'A', "Adilson Konrad" },
+                { 'B', "Beatriz Paiva" },
+                { 'C', "Claro" },
+                { 'D', "Douglas Baquiao" },
+                { 'E', "Eduardo Takeo" },
+                { 'G', "Guilherme Rey" },
+                { 'H', "Heredia" },
+                { 'K', "Karin" },
+                { 'L', "Leonardo Takuno" },
+                { 'M', "Mario Toledo" },
+                { 'Q', "Quintas" },
+                { 'R', "Ranulfo" },
+                { 'T', "Toshio" }
+            };
+
+            if (!string.IsNullOrEmpty(setor) && personagem.Length > 0 && nomes.ContainsKey(personagem[0]))
+            {
+                string entrada = setor + "." + personagem[0];
+
+                if (lstTabuleiro.Items.Cast<string>().Contains(entrada))
+                {
+                    lstTabuleiro.Items.Add("ERRO: Esse personagem já foi adicionado!");
+                    return;
+                }
+
+                int contador = lstTabuleiro.Items.Cast<string>().Count(item => item.StartsWith(setor + "."));
+
+                if (contador < 4)
+                {
+                    lstTabuleiro.Items.Add(entrada);
+                    // Alterar a vez para o próximo jogador após colocar o personagem
+                    vezAtual = (vezAtual + 1) % jogadores.Count;
+                }
+                else
+                {
+                    lstTabuleiro.Items.Add("ERRO: Setor cheio!");
+                }
+            }
+            else
+            {
+                lstTabuleiro.Items.Add("ERRO: Personagem não encontrado!");
+            }
+        }
+
+        // Código para verificar quem é o jogador da vez
+        private void btnVerificarVez_Click(object sender, EventArgs e)
+        {
+       
         }
     }
 }
