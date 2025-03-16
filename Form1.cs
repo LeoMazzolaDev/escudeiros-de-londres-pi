@@ -187,5 +187,10 @@ namespace kingMe.cs
                 }
             }
         }
+
+        private void btnConfiguracoes_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
