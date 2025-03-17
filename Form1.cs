@@ -18,10 +18,12 @@ namespace kingMe.cs
         private int idJogador;
         private string senhaJogador;
         public string nomeGrupo = "Escudeiros de Londres";
+        public int idPartida;
+        private string[] jogadores;
+        private string idJogadorDaVez;
+        private string nomeJogadorDaVez;
 
 
-        private List<string> jogadores = new List<string> { "Jogador 1", "Jogador 2", "Jogador 3", "Jogador 4" };
-        private int vezAtual = 0;  
 
         public Form1()
         {
@@ -62,7 +64,6 @@ namespace kingMe.cs
         private void btnListarPartidas_Click(object sender, EventArgs e)
         {
             string retorno = Jogo.ListarPartidas("T");
-            lstListarPartidas.Text = retorno;
 
             retorno = retorno.Replace("\r", "");
             retorno = retorno.Substring(0, retorno.Length - 1);
@@ -91,7 +92,7 @@ namespace kingMe.cs
 
             string retorno = Jogo.ListarJogadores(idPartida);
             retorno = retorno.Replace("\r", "");
-            string[] jogadores = retorno.Split('\n');
+            jogadores = retorno.Split('\n');
 
             lstJogadores.Items.Clear();
             for (int i = 0; i < jogadores.Length; i++) { 
@@ -103,36 +104,53 @@ namespace kingMe.cs
 
         private void btnEntrar_Click(object sender, EventArgs e)
         {
-            pnlEntrarPartida.Visible = false;
-            pnlLobby.Visible = true;
-
             string partida = lstListarPartidas.SelectedItem.ToString();
             string[] informacaoPartida = partida.Split(',');
 
-            int idPartida = Convert.ToInt32(informacaoPartida[0]);
-            string username = txtUsername.Text;
-            string senha = txtSenhaEntrar.Text;
+            char statusPartida = Convert.ToChar(informacaoPartida[3]);
 
-            string Jogador = Jogo.Entrar(idPartida, username, senha);
-            string[] infoJogador = Jogador.Split(',');
-            idJogadorTxt = infoJogador[0];
-            senhaJogador = infoJogador[1];
-
-            lblIdJogador.Text = "Id do jogador: " + idJogadorTxt;
-            lblSenhaJogador.Text = "Senha do jogador: " + senhaJogador;
-
-            idJogador = Convert.ToInt32(idJogadorTxt);
-
-            Jogo.Iniciar(idJogador, senhaJogador);
-
-            string retorno = Jogo.ListarJogadores(idPartida);
-            retorno = retorno.Replace("\r", "");
-            string[] jogadores = retorno.Split('\n');
-
-            lstJogadores.Items.Clear();
-            for (int i = 0; i < jogadores.Length; i++)
+            if(statusPartida == 'E') 
             {
-                lstJogadores.Items.Add(jogadores[i]);
+                MessageBox.Show("Ocorreu um erro: \n Essa partida já foi encerrada!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            } else if (statusPartida == 'J') 
+            {
+                MessageBox.Show("Ocorreu um erro: \n Essa partida já foi iniciada", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            else 
+            {
+                pnlEntrarPartida.Visible = false;
+                pnlLobby.Visible = true;
+
+
+
+                idPartida = Convert.ToInt32(informacaoPartida[0]);
+                string username = txtUsername.Text;
+                string senha = txtSenhaEntrar.Text;
+
+                string Jogador = Jogo.Entrar(idPartida, username, senha);
+                string[] infoJogador = Jogador.Split(',');
+                idJogadorTxt = infoJogador[0];
+                senhaJogador = infoJogador[1];
+
+                lblIdJogador.Text = "Id do jogador: " + idJogadorTxt;
+                lblSenhaJogador.Text = "Senha do jogador: " + senhaJogador;
+
+                idJogador = Convert.ToInt32(idJogadorTxt);
+
+
+
+                string listarJogadores = Jogo.ListarJogadores(idPartida);
+                listarJogadores = listarJogadores.Replace("\r", "");
+                listarJogadores = listarJogadores.Substring(0, listarJogadores.Length - 1);
+                jogadores = listarJogadores.Split('\n');
+
+                lstJogadores.Items.Clear();
+                for (int i = 0; i < jogadores.Length; i++)
+                {
+                    lstJogadores.Items.Add(jogadores[i]);
+                }
             }
         }
 
@@ -157,16 +175,32 @@ namespace kingMe.cs
 
         private void btnIniciar_Click(object sender, EventArgs e)
         {
-            pnlLobby.Visible = false;
-            pnlPartida.Visible = true;
+            string atualizarJogadores = Jogo.ListarJogadores(idPartida);
+            atualizarJogadores = atualizarJogadores.Replace("\r", "");
+            atualizarJogadores = atualizarJogadores.Substring(0, atualizarJogadores.Length - 1);
+            jogadores = atualizarJogadores.Split('\n');
 
-            string retorno = Jogo.ListarPersonagens();
-            retorno = retorno.Replace("\r", "");
-            string[] nomePersonagens = retorno.Split('\n');
-            for (int i = 0; i < nomePersonagens.Length; i++)
+
+            if (jogadores.Length <= 1) 
             {
-                lstNomePersonagens.Items.Add(nomePersonagens[i]);
+                MessageBox.Show("Ocorreu um erro: \n A partida só pode ser iniciada com mais de dois jogadores", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
+            else 
+            {
+                pnlLobby.Visible = false;
+                pnlPartida.Visible = true;
+                Jogo.Iniciar(idJogador, senhaJogador);
+
+                string retorno = Jogo.ListarPersonagens();
+                retorno = retorno.Replace("\r", "");
+                string[] nomePersonagens = retorno.Split('\n');
+                for (int i = 0; i < nomePersonagens.Length; i++)
+                {
+                    lstNomePersonagens.Items.Add(nomePersonagens[i]);
+                }
+            }
+
 
         }
 
@@ -221,59 +255,50 @@ namespace kingMe.cs
 
          private void btnColocarPersonagem_Click(object sender, EventArgs e)
         {
-            string setor = txtSetor.Text;
-            string personagem = txtPersonagem.Text.ToUpper();
+            string txtIdJogador = idJogador.ToString();
 
-            Dictionary<char, string> nomes = new Dictionary<char, string>
+            if (txtIdJogador != idJogadorDaVez)
             {
-                { 'A', "Adilson Konrad" },
-                { 'B', "Beatriz Paiva" },
-                { 'C', "Claro" },
-                { 'D', "Douglas Baquiao" },
-                { 'E', "Eduardo Takeo" },
-                { 'G', "Guilherme Rey" },
-                { 'H', "Heredia" },
-                { 'K', "Karin" },
-                { 'L', "Leonardo Takuno" },
-                { 'M', "Mario Toledo" },
-                { 'Q', "Quintas" },
-                { 'R', "Ranulfo" },
-                { 'T', "Toshio" }
-            };
-
-            if (!string.IsNullOrEmpty(setor) && personagem.Length > 0 && nomes.ContainsKey(personagem[0]))
-            {
-                string entrada = setor + "." + personagem[0];
-
-                if (lstTabuleiro.Items.Cast<string>().Contains(entrada))
-                {
-                    lstTabuleiro.Items.Add("ERRO: Esse personagem já foi adicionado!");
-                    return;
-                }
-
-                int contador = lstTabuleiro.Items.Cast<string>().Count(item => item.StartsWith(setor + "."));
-
-                if (contador < 4)
-                {
-                    lstTabuleiro.Items.Add(entrada);
-                    // Alterar a vez para o próximo jogador após colocar o personagem
-                    vezAtual = (vezAtual + 1) % jogadores.Count;
-                }
-                else
-                {
-                    lstTabuleiro.Items.Add("ERRO: Setor cheio!");
-                }
+                MessageBox.Show("Ocorreu um erro: \n Não é a sua vez", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+                //Colocar o nome do jogador da Vez
             }
             else
             {
-                lstTabuleiro.Items.Add("ERRO: Personagem não encontrado!");
+                lstTabuleiro.Items.Clear();
+                int setor = Convert.ToInt32(txtSetor.Text);
+                string personagem = txtPersonagem.Text;
+
+                string infoTabuleiro = Jogo.ColocarPersonagem(idJogador, senhaJogador, setor, personagem);
+                infoTabuleiro = infoTabuleiro.Replace("\r", "");
+                infoTabuleiro = infoTabuleiro.Substring(0, infoTabuleiro.Length - 1);
+                string[] infoSetor = infoTabuleiro.Split('\n');
+                for (int i = 0; i < infoSetor.Length; i++)
+                {
+                    lstTabuleiro.Items.Add(infoSetor[i]);
+                }
             }
         }
 
         // Código para verificar quem é o jogador da vez
         private void btnVerificarVez_Click(object sender, EventArgs e)
         {
-       
-        }
+            lblIdDaVez.Text = "";
+            lblNomeDaVez.Text = "";
+            string retorno = Jogo.VerificarVez(idPartida);
+            retorno = retorno.Replace("\r\n", "");
+            string[] vezInfo = retorno.Split(',');
+
+            int indice = Array.FindIndex(jogadores, elemento => elemento.StartsWith(vezInfo[0]));
+
+            string infoJogadorDaVez = jogadores[indice];
+
+            string[] jogadorDaVez = infoJogadorDaVez.Split(',');
+            idJogadorDaVez = jogadorDaVez[0];
+            nomeJogadorDaVez = jogadorDaVez[1];
+            lblIdDaVez.Text = "Id do jogador da vez:" + idJogadorDaVez;
+            lblNomeDaVez.Text = "Nome do jogador da vez:" + nomeJogadorDaVez;
+            
     }
 }
+        }
