@@ -23,11 +23,56 @@ namespace kingMe.cs
         private string idJogadorDaVez;
         private string nomeJogadorDaVez;
 
+        private Dictionary<string, Image> sprites = new Dictionary<string, Image>()
+        {
+            { "A", Properties.Resources.A },
+            { "B", Properties.Resources.B },
+            { "C", Properties.Resources.C },
+            { "D", Properties.Resources.D },
+            { "E", Properties.Resources.E },
+            { "G", Properties.Resources.G },
+            { "H", Properties.Resources.H },
+            { "K", Properties.Resources.K },
+            { "L", Properties.Resources.L },
+            { "M", Properties.Resources.M },
+            { "Q", Properties.Resources.Q },
+            { "R", Properties.Resources.R },
+            { "T", Properties.Resources.T }
+        };
 
+        private Dictionary<int, Point> posicaoSetores = new Dictionary<int, Point>()
+        {
+            { 0, new Point(200, 490) },  // Setor 0
+            { 1, new Point(100, 420) },
+            { 2, new Point(100, 350) },
+            { 3, new Point(100, 275) },
+            { 4, new Point(100, 200) },
+            { 5, new Point(100, 125) },
+            { 10, new Point(200, 60)  }  // Setor 10
+        };
+
+        private Dictionary<int, int> contagemSetores = new Dictionary<int, int>()
+        {
+            { 0, 0 }, { 1, 0 }, { 2, 0 }, { 3, 0 },
+            { 4, 0 }, { 5, 0 }, { 10, 0 }
+        }; 
+
+        private Dictionary<int, int> limiteSetores = new Dictionary<int, int>()
+        {
+            { 0, 1 }, { 1, 4 }, { 2, 4 }, { 3, 4 },
+            { 4, 4 }, { 5, 4 }, { 10, 1 }
+        };
+
+        private Dictionary<int, List<string>> personagensNosSetores = new Dictionary<int, List<string>>()
+        {
+            { 0, new List<string>() }, { 1, new List<string>() }, { 2, new List<string>() }, { 3, new List<string>() },
+            { 4, new List<string>() }, { 5, new List<string>() }, { 10, new List<string>() }
+        };
 
         public Form1()
         {
             InitializeComponent();
+            pnlTeste2.Paint += pnlTeste_Paint;
             lblVersao.Text = "Versão" + Jogo.versao;
             pnlEscolhaJogar.Visible = false;
             pnlEntrarPartida.Visible = false;
@@ -253,32 +298,115 @@ namespace kingMe.cs
 
         }
 
-         private void btnColocarPersonagem_Click(object sender, EventArgs e)
+        private void btnColocarPersonagem_Click(object sender, EventArgs e)
         {
-            string txtIdJogador = idJogador.ToString();
-
-            if (txtIdJogador != idJogadorDaVez)
+            if (idJogador.ToString() != idJogadorDaVez)
             {
-                MessageBox.Show("Ocorreu um erro: \n Não é a sua vez", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Ocorreu um erro: \nNão é a sua vez", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
-                //Colocar o nome do jogador da Vez
             }
-            else
-            {
-                lstTabuleiro.Items.Clear();
-                int setor = Convert.ToInt32(txtSetor.Text);
-                string personagem = txtPersonagem.Text;
 
-                string infoTabuleiro = Jogo.ColocarPersonagem(idJogador, senhaJogador, setor, personagem);
-                infoTabuleiro = infoTabuleiro.Replace("\r", "");
-                infoTabuleiro = infoTabuleiro.Substring(0, infoTabuleiro.Length - 1);
-                string[] infoSetor = infoTabuleiro.Split('\n');
-                for (int i = 0; i < infoSetor.Length; i++)
+            // Conta quantos personagens já foram colocados
+            int totalPersonagens = personagensNosSetores.Sum(s => s.Value.Count);
+
+            // Se for o 13º personagem, ele vai automaticamente para o setor 0
+            int setor = (totalPersonagens < 12) ? int.Parse(txtSetor.Text) : 0;
+
+            if (!posicaoSetores.ContainsKey(setor))
+            {
+                MessageBox.Show("Setor inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string personagem = txtPersonagem.Text.Trim();
+            if (string.IsNullOrEmpty(personagem) || personagem.Length != 1)
+            {
+                MessageBox.Show("Personagem inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Se não for o 13º personagem, verifica se há espaço no setor
+            if (totalPersonagens < 12 && contagemSetores[setor] >= limiteSetores[setor])
+            {
+                MessageBox.Show("O setor está cheio!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            lstTabuleiro.Items.Clear();
+
+            // Envia o personagem para o banco e recebe o estado atualizado do tabuleiro
+            string infoTabuleiro = Jogo.ColocarPersonagem(idJogador, senhaJogador, setor, personagem);
+            infoTabuleiro = infoTabuleiro.Replace("\r", "").Trim();
+            string[] infoSetor = infoTabuleiro.Split('\n');
+
+            // Limpa os personagens dos setores antes de atualizar
+            foreach (var key in personagensNosSetores.Keys.ToList())
+            {
+                personagensNosSetores[key].Clear();
+            }
+
+            // Atualiza os personagens com base na resposta do banco de dados
+            foreach (string item in infoSetor)
+            {
+                string[] dados = item.Split(',');
+                if (dados.Length == 2)
                 {
-                    lstTabuleiro.Items.Add(infoSetor[i]);
+                    int setorRecebido = int.Parse(dados[0].Trim());
+                    string personagemRecebido = dados[1].Trim();
+
+                    if (!personagensNosSetores.ContainsKey(setorRecebido))
+                    {
+                        personagensNosSetores[setorRecebido] = new List<string>();
+                    }
+                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
+                }
+            }
+
+            // Atualiza a contagem de personagens nos setores
+            foreach (var key in personagensNosSetores.Keys)
+            {
+                contagemSetores[key] = personagensNosSetores[key].Count;
+            }
+
+            // Atualiza a exibição no ListBox
+            foreach (var setorEntry in personagensNosSetores)
+            {
+                foreach (var personagemEntry in setorEntry.Value)
+                {
+                    lstTabuleiro.Items.Add($"Setor {setorEntry.Key}: {personagemEntry}");
+                }
+            }
+
+            // Atualiza a exibição do painel
+            pnlTeste2.Invalidate();
+        }
+
+
+
+
+
+        private void pnlTeste_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+
+            // Desenha os personagens de acordo com os setores
+            foreach (var setor in personagensNosSetores)
+            {
+                int index = 0;
+                foreach (var personagem in setor.Value)
+                {
+                    if (sprites.ContainsKey(personagem))
+                    {
+                        Point posicaoBase = posicaoSetores[setor.Key];
+                        Point posicaoFinal = new Point(posicaoBase.X + (index * 65), posicaoBase.Y);
+
+                        g.DrawImage(sprites[personagem], posicaoFinal);
+                    }
+                    index++;
                 }
             }
         }
+
 
         // Código para verificar quem é o jogador da vez
         private void btnVerificarVez_Click(object sender, EventArgs e)
@@ -300,5 +428,18 @@ namespace kingMe.cs
             lblNomeDaVez.Text = "Nome do jogador da vez:" + nomeJogadorDaVez;
             
     }
-}
+
+        private void btnMostrarImg_Click(object sender, EventArgs e)
+        {
+            //if (picAprov.Visible == false)
+            //{
+            //    picAprov.Visible = true;
+            //}
         }
+
+        private void picAprov_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}

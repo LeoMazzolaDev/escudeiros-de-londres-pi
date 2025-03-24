@@ -68,6 +68,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -81,6 +82,87 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\tabuleiro.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imagemA.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\B.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\C.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\D.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\E.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\G.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\H.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\K.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\L.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\M.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Q.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\R.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\T.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\A.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\B1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\C1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\D1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\E1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\G1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\H1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\K1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\L1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\M1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Q1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\R1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\T1.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
