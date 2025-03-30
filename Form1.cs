@@ -313,12 +313,6 @@ namespace kingMe.cs
             // Se for o 13º personagem, ele vai automaticamente para o setor 0
             int setor = (totalPersonagens < 12) ? int.Parse(txtSetor.Text) : 0;
 
-            if (totalPersonagens >= 12)
-            {
-                btnColocarPersonagem.Visible = false;
-                btnPromoverPersonagem.Visible = true;
-            }
-
             if (!posicaoSetores.ContainsKey(setor))
             {
                 MessageBox.Show("Setor inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -481,6 +475,7 @@ namespace kingMe.cs
 
         }
 
+        // Promoção
         private void btnPromoverPersonagem_Click(object sender, EventArgs e)
         {
             string personagem = txtPersonagem.Text.Trim();

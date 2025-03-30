@@ -398,7 +398,7 @@
             // lblNomeDaVez
             // 
             this.lblNomeDaVez.AutoSize = true;
-            this.lblNomeDaVez.Location = new System.Drawing.Point(382, 34);
+            this.lblNomeDaVez.Location = new System.Drawing.Point(406, 34);
             this.lblNomeDaVez.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblNomeDaVez.Name = "lblNomeDaVez";
             this.lblNomeDaVez.Size = new System.Drawing.Size(86, 13);
@@ -418,7 +418,7 @@
             // lblSetor
             // 
             this.lblSetor.AutoSize = true;
-            this.lblSetor.Location = new System.Drawing.Point(1074, 324);
+            this.lblSetor.Location = new System.Drawing.Point(1074, 339);
             this.lblSetor.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblSetor.Name = "lblSetor";
             this.lblSetor.Size = new System.Drawing.Size(32, 13);
@@ -427,7 +427,7 @@
             // 
             // txtSetor
             // 
-            this.txtSetor.Location = new System.Drawing.Point(1073, 340);
+            this.txtSetor.Location = new System.Drawing.Point(1073, 355);
             this.txtSetor.Margin = new System.Windows.Forms.Padding(2);
             this.txtSetor.Name = "txtSetor";
             this.txtSetor.Size = new System.Drawing.Size(95, 20);
@@ -435,7 +435,7 @@
             // 
             // btnColocarPersonagem
             // 
-            this.btnColocarPersonagem.Location = new System.Drawing.Point(1178, 291);
+            this.btnColocarPersonagem.Location = new System.Drawing.Point(1073, 398);
             this.btnColocarPersonagem.Margin = new System.Windows.Forms.Padding(2);
             this.btnColocarPersonagem.Name = "btnColocarPersonagem";
             this.btnColocarPersonagem.Size = new System.Drawing.Size(74, 59);
@@ -446,7 +446,7 @@
             // 
             // txtPersonagem
             // 
-            this.txtPersonagem.Location = new System.Drawing.Point(1073, 295);
+            this.txtPersonagem.Location = new System.Drawing.Point(1073, 310);
             this.txtPersonagem.Margin = new System.Windows.Forms.Padding(2);
             this.txtPersonagem.Name = "txtPersonagem";
             this.txtPersonagem.Size = new System.Drawing.Size(94, 20);
@@ -455,17 +455,17 @@
             // lstNomePersonagens
             // 
             this.lstNomePersonagens.FormattingEnabled = true;
-            this.lstNomePersonagens.Location = new System.Drawing.Point(1115, 33);
+            this.lstNomePersonagens.Location = new System.Drawing.Point(1073, 33);
             this.lstNomePersonagens.Margin = new System.Windows.Forms.Padding(2);
             this.lstNomePersonagens.Name = "lstNomePersonagens";
-            this.lstNomePersonagens.Size = new System.Drawing.Size(125, 225);
+            this.lstNomePersonagens.Size = new System.Drawing.Size(167, 225);
             this.lstNomePersonagens.TabIndex = 8;
             this.lstNomePersonagens.SelectedIndexChanged += new System.EventHandler(this.lstNomePersonagens_SelectedIndexChanged);
             // 
             // lblPersonagem
             // 
             this.lblPersonagem.AutoSize = true;
-            this.lblPersonagem.Location = new System.Drawing.Point(1074, 280);
+            this.lblPersonagem.Location = new System.Drawing.Point(1074, 295);
             this.lblPersonagem.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblPersonagem.Name = "lblPersonagem";
             this.lblPersonagem.Size = new System.Drawing.Size(66, 13);
@@ -487,7 +487,7 @@
             // lstTabuleiro
             // 
             this.lstTabuleiro.FormattingEnabled = true;
-            this.lstTabuleiro.Location = new System.Drawing.Point(1073, 384);
+            this.lstTabuleiro.Location = new System.Drawing.Point(1073, 482);
             this.lstTabuleiro.Margin = new System.Windows.Forms.Padding(2);
             this.lstTabuleiro.Name = "lstTabuleiro";
             this.lstTabuleiro.Size = new System.Drawing.Size(167, 160);
@@ -496,14 +496,14 @@
             // lstCartas
             // 
             this.lstCartas.FormattingEnabled = true;
-            this.lstCartas.Location = new System.Drawing.Point(3, 278);
+            this.lstCartas.Location = new System.Drawing.Point(38, 339);
             this.lstCartas.Name = "lstCartas";
             this.lstCartas.Size = new System.Drawing.Size(218, 160);
             this.lstCartas.TabIndex = 3;
             // 
             // btnListarCartas
             // 
-            this.btnListarCartas.Location = new System.Drawing.Point(89, 248);
+            this.btnListarCartas.Location = new System.Drawing.Point(38, 306);
             this.btnListarCartas.Name = "btnListarCartas";
             this.btnListarCartas.Size = new System.Drawing.Size(132, 24);
             this.btnListarCartas.TabIndex = 2;
@@ -593,13 +593,12 @@
             // 
             // btnPromoverPersonagem
             // 
-            this.btnPromoverPersonagem.Location = new System.Drawing.Point(1178, 292);
+            this.btnPromoverPersonagem.Location = new System.Drawing.Point(1165, 398);
             this.btnPromoverPersonagem.Name = "btnPromoverPersonagem";
             this.btnPromoverPersonagem.Size = new System.Drawing.Size(75, 58);
             this.btnPromoverPersonagem.TabIndex = 19;
             this.btnPromoverPersonagem.Text = "Promover personagem";
             this.btnPromoverPersonagem.UseVisualStyleBackColor = true;
-            this.btnPromoverPersonagem.Visible = false;
             this.btnPromoverPersonagem.Click += new System.EventHandler(this.btnPromoverPersonagem_Click);
             // 
             // Form1
