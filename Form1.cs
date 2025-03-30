@@ -475,7 +475,7 @@ namespace kingMe.cs
 
         }
 
-        // Promoção
+
         private void btnPromoverPersonagem_Click(object sender, EventArgs e)
         {
             string personagem = txtPersonagem.Text.Trim();
