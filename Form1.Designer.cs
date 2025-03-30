@@ -58,6 +58,7 @@
             this.pnlLobby = new System.Windows.Forms.Panel();
             this.btnIniciar = new System.Windows.Forms.Button();
             this.pnlPartida = new System.Windows.Forms.Panel();
+            this.pnlTeste2 = new System.Windows.Forms.Panel();
             this.lblNomeDaVez = new System.Windows.Forms.Label();
             this.lblIdDaVez = new System.Windows.Forms.Label();
             this.lblSetor = new System.Windows.Forms.Label();
@@ -72,12 +73,12 @@
             this.btnListarCartas = new System.Windows.Forms.Button();
             this.lblSenhaJogador = new System.Windows.Forms.Label();
             this.lblIdJogador = new System.Windows.Forms.Label();
-            this.pnlTeste2 = new System.Windows.Forms.Panel();
             this.pnlMenuInicial = new System.Windows.Forms.Panel();
             this.btnSair = new System.Windows.Forms.Button();
             this.btnConfiguracoes = new System.Windows.Forms.Button();
             this.btnComoJogar = new System.Windows.Forms.Button();
             this.btnJogar = new System.Windows.Forms.Button();
+            this.btnPromoverPersonagem = new System.Windows.Forms.Button();
             this.pnlCriarPartida.SuspendLayout();
             this.pnlEntrarPartida.SuspendLayout();
             this.pnlEscolhaJogar.SuspendLayout();
@@ -362,6 +363,7 @@
             // 
             // pnlPartida
             // 
+            this.pnlPartida.Controls.Add(this.btnPromoverPersonagem);
             this.pnlPartida.Controls.Add(this.pnlTeste2);
             this.pnlPartida.Controls.Add(this.lblNomeDaVez);
             this.pnlPartida.Controls.Add(this.lblIdDaVez);
@@ -383,6 +385,15 @@
             this.pnlPartida.Size = new System.Drawing.Size(1264, 681);
             this.pnlPartida.TabIndex = 15;
             this.pnlPartida.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlPartida_Paint);
+            // 
+            // pnlTeste2
+            // 
+            this.pnlTeste2.BackgroundImage = global::kingMe.cs.Properties.Resources.tabuleiro;
+            this.pnlTeste2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pnlTeste2.Location = new System.Drawing.Point(422, 87);
+            this.pnlTeste2.Name = "pnlTeste2";
+            this.pnlTeste2.Size = new System.Drawing.Size(414, 555);
+            this.pnlTeste2.TabIndex = 18;
             // 
             // lblNomeDaVez
             // 
@@ -407,7 +418,7 @@
             // lblSetor
             // 
             this.lblSetor.AutoSize = true;
-            this.lblSetor.Location = new System.Drawing.Point(1070, 270);
+            this.lblSetor.Location = new System.Drawing.Point(1074, 324);
             this.lblSetor.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblSetor.Name = "lblSetor";
             this.lblSetor.Size = new System.Drawing.Size(32, 13);
@@ -416,7 +427,7 @@
             // 
             // txtSetor
             // 
-            this.txtSetor.Location = new System.Drawing.Point(1072, 287);
+            this.txtSetor.Location = new System.Drawing.Point(1073, 340);
             this.txtSetor.Margin = new System.Windows.Forms.Padding(2);
             this.txtSetor.Name = "txtSetor";
             this.txtSetor.Size = new System.Drawing.Size(95, 20);
@@ -435,7 +446,7 @@
             // 
             // txtPersonagem
             // 
-            this.txtPersonagem.Location = new System.Drawing.Point(1073, 340);
+            this.txtPersonagem.Location = new System.Drawing.Point(1073, 295);
             this.txtPersonagem.Margin = new System.Windows.Forms.Padding(2);
             this.txtPersonagem.Name = "txtPersonagem";
             this.txtPersonagem.Size = new System.Drawing.Size(94, 20);
@@ -454,7 +465,7 @@
             // lblPersonagem
             // 
             this.lblPersonagem.AutoSize = true;
-            this.lblPersonagem.Location = new System.Drawing.Point(1074, 325);
+            this.lblPersonagem.Location = new System.Drawing.Point(1074, 280);
             this.lblPersonagem.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lblPersonagem.Name = "lblPersonagem";
             this.lblPersonagem.Size = new System.Drawing.Size(66, 13);
@@ -518,15 +529,6 @@
             this.lblIdJogador.TabIndex = 0;
             this.lblIdJogador.Text = "Id: ";
             // 
-            // pnlTeste2
-            // 
-            this.pnlTeste2.BackgroundImage = global::kingMe.cs.Properties.Resources.tabuleiro;
-            this.pnlTeste2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pnlTeste2.Location = new System.Drawing.Point(422, 87);
-            this.pnlTeste2.Name = "pnlTeste2";
-            this.pnlTeste2.Size = new System.Drawing.Size(414, 555);
-            this.pnlTeste2.TabIndex = 18;
-            // 
             // pnlMenuInicial
             // 
             this.pnlMenuInicial.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pnlMenuInicial.BackgroundImage")));
@@ -543,41 +545,62 @@
             // 
             // btnSair
             // 
-            this.btnSair.Location = new System.Drawing.Point(264, 342);
+            this.btnSair.BackColor = System.Drawing.Color.Transparent;
+            this.btnSair.Font = new System.Drawing.Font("Consolas", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnSair.Location = new System.Drawing.Point(266, 571);
             this.btnSair.Name = "btnSair";
-            this.btnSair.Size = new System.Drawing.Size(225, 81);
+            this.btnSair.Size = new System.Drawing.Size(238, 49);
             this.btnSair.TabIndex = 25;
             this.btnSair.Text = "Sair";
-            this.btnSair.UseVisualStyleBackColor = true;
+            this.btnSair.UseVisualStyleBackColor = false;
+            this.btnSair.Click += new System.EventHandler(this.btnSair_Click);
             // 
             // btnConfiguracoes
             // 
-            this.btnConfiguracoes.Location = new System.Drawing.Point(20, 342);
+            this.btnConfiguracoes.BackColor = System.Drawing.Color.Transparent;
+            this.btnConfiguracoes.Font = new System.Drawing.Font("Consolas", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnConfiguracoes.Location = new System.Drawing.Point(266, 507);
             this.btnConfiguracoes.Name = "btnConfiguracoes";
-            this.btnConfiguracoes.Size = new System.Drawing.Size(225, 81);
+            this.btnConfiguracoes.Size = new System.Drawing.Size(238, 49);
             this.btnConfiguracoes.TabIndex = 24;
             this.btnConfiguracoes.Text = "Configurações";
-            this.btnConfiguracoes.UseVisualStyleBackColor = true;
+            this.btnConfiguracoes.UseVisualStyleBackColor = false;
             this.btnConfiguracoes.Click += new System.EventHandler(this.btnConfiguracoes_Click);
             // 
             // btnComoJogar
             // 
-            this.btnComoJogar.Location = new System.Drawing.Point(264, 246);
+            this.btnComoJogar.BackColor = System.Drawing.Color.Transparent;
+            this.btnComoJogar.Font = new System.Drawing.Font("Consolas", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnComoJogar.Location = new System.Drawing.Point(266, 447);
             this.btnComoJogar.Name = "btnComoJogar";
-            this.btnComoJogar.Size = new System.Drawing.Size(225, 81);
+            this.btnComoJogar.Size = new System.Drawing.Size(238, 49);
             this.btnComoJogar.TabIndex = 23;
             this.btnComoJogar.Text = "Como jogar";
-            this.btnComoJogar.UseVisualStyleBackColor = true;
+            this.btnComoJogar.UseVisualStyleBackColor = false;
+            this.btnComoJogar.Click += new System.EventHandler(this.btnComoJogar_Click);
             // 
             // btnJogar
             // 
-            this.btnJogar.Location = new System.Drawing.Point(20, 246);
+            this.btnJogar.BackColor = System.Drawing.Color.Transparent;
+            this.btnJogar.Font = new System.Drawing.Font("Consolas", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnJogar.Location = new System.Drawing.Point(266, 384);
             this.btnJogar.Name = "btnJogar";
-            this.btnJogar.Size = new System.Drawing.Size(225, 81);
+            this.btnJogar.Size = new System.Drawing.Size(238, 49);
             this.btnJogar.TabIndex = 22;
             this.btnJogar.Text = "Jogar";
-            this.btnJogar.UseVisualStyleBackColor = true;
+            this.btnJogar.UseVisualStyleBackColor = false;
             this.btnJogar.Click += new System.EventHandler(this.btnJogar_Click_1);
+            // 
+            // btnPromoverPersonagem
+            // 
+            this.btnPromoverPersonagem.Location = new System.Drawing.Point(1178, 292);
+            this.btnPromoverPersonagem.Name = "btnPromoverPersonagem";
+            this.btnPromoverPersonagem.Size = new System.Drawing.Size(75, 58);
+            this.btnPromoverPersonagem.TabIndex = 19;
+            this.btnPromoverPersonagem.Text = "Promover personagem";
+            this.btnPromoverPersonagem.UseVisualStyleBackColor = true;
+            this.btnPromoverPersonagem.Visible = false;
+            this.btnPromoverPersonagem.Click += new System.EventHandler(this.btnPromoverPersonagem_Click);
             // 
             // Form1
             // 
@@ -585,11 +608,11 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1264, 681);
             this.Controls.Add(this.pnlPartida);
+            this.Controls.Add(this.pnlMenuInicial);
             this.Controls.Add(this.pnlEntrarPartida);
             this.Controls.Add(this.pnlLobby);
             this.Controls.Add(this.lblNomeGrupo);
             this.Controls.Add(this.lblVersao);
-            this.Controls.Add(this.pnlMenuInicial);
             this.Controls.Add(this.pnlCriarPartida);
             this.Controls.Add(this.pnlEscolhaJogar);
             this.Name = "Form1";
@@ -660,6 +683,7 @@
         private System.Windows.Forms.Label lblNomeDaVez;
         private System.Windows.Forms.Label lblIdDaVez;
         private System.Windows.Forms.Panel pnlTeste2;
+        private System.Windows.Forms.Button btnPromoverPersonagem;
     }
 }
 

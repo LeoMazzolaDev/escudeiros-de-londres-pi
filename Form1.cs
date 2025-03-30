@@ -73,12 +73,13 @@ namespace kingMe.cs
         {
             InitializeComponent();
             pnlTeste2.Paint += pnlTeste_Paint;
-            lblVersao.Text = "Versão" + Jogo.versao;
+            string versaoJogo = Jogo.versao;
             pnlEscolhaJogar.Visible = false;
             pnlEntrarPartida.Visible = false;
             pnlCriarPartida.Visible = false;
             pnlLobby.Visible = false;
             pnlPartida.Visible = false;
+            this.Text = "Escudeiros de Londres | versão: " + versaoJogo;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -312,6 +313,12 @@ namespace kingMe.cs
             // Se for o 13º personagem, ele vai automaticamente para o setor 0
             int setor = (totalPersonagens < 12) ? int.Parse(txtSetor.Text) : 0;
 
+            if (totalPersonagens >= 12)
+            {
+                btnColocarPersonagem.Visible = false;
+                btnPromoverPersonagem.Visible = true;
+            }
+
             if (!posicaoSetores.ContainsKey(setor))
             {
                 MessageBox.Show("Setor inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -376,14 +383,7 @@ namespace kingMe.cs
                     lstTabuleiro.Items.Add($"Setor {setorEntry.Key}: {personagemEntry}");
                 }
             }
-
-            // Atualiza a exibição do painel
-            pnlTeste2.Invalidate();
         }
-
-
-
-
 
         private void pnlTeste_Paint(object sender, PaintEventArgs e)
         {
@@ -414,20 +414,59 @@ namespace kingMe.cs
             lblIdDaVez.Text = "";
             lblNomeDaVez.Text = "";
             string retorno = Jogo.VerificarVez(idPartida);
-            retorno = retorno.Replace("\r\n", "");
-            string[] vezInfo = retorno.Split(',');
 
+            // Dividir no primeiro \r\n encontrado
+            string[] separador = retorno.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
+
+            string infoPartida = separador[0]; // Primeira linha
+            string infoPosicao = separador.Length > 1 ? separador[1] : ""; // O resto da string
+
+            // Mostrar nome e jogador da vez
+            string[] vezInfo = infoPartida.Split(',');
             int indice = Array.FindIndex(jogadores, elemento => elemento.StartsWith(vezInfo[0]));
-
             string infoJogadorDaVez = jogadores[indice];
-
             string[] jogadorDaVez = infoJogadorDaVez.Split(',');
             idJogadorDaVez = jogadorDaVez[0];
             nomeJogadorDaVez = jogadorDaVez[1];
             lblIdDaVez.Text = "Id do jogador da vez:" + idJogadorDaVez;
             lblNomeDaVez.Text = "Nome do jogador da vez:" + nomeJogadorDaVez;
-            
-    }
+
+            // Atualizar tabuleiro
+            infoPosicao = infoPosicao.Replace("\r", "");
+            string[] infoSetor = infoPosicao.Split('\n');
+
+            // Limpa os personagens dos setores antes de atualizar
+            foreach (var key in personagensNosSetores.Keys.ToList())
+            {
+                personagensNosSetores[key].Clear();
+            }
+
+            // Atualiza os personagens com base na resposta do banco de dados
+            foreach (string item in infoSetor)
+            {
+                string[] dados = item.Split(',');
+                if (dados.Length == 2)
+                {
+                    int setorRecebido = int.Parse(dados[0].Trim());
+                    string personagemRecebido = dados[1].Trim();
+
+                    if (!personagensNosSetores.ContainsKey(setorRecebido))
+                    {
+                        personagensNosSetores[setorRecebido] = new List<string>();
+                    }
+                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
+                }
+            }
+
+            // Atualiza a contagem de personagens nos setores
+            foreach (var key in personagensNosSetores.Keys)
+            {
+                contagemSetores[key] = personagensNosSetores[key].Count;
+            }
+
+            // Atualiza a exibição do painel
+            pnlTeste2.Invalidate();
+        }
 
         private void btnMostrarImg_Click(object sender, EventArgs e)
         {
@@ -438,6 +477,64 @@ namespace kingMe.cs
         }
 
         private void picAprov_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnPromoverPersonagem_Click(object sender, EventArgs e)
+        {
+            string personagem = txtPersonagem.Text.Trim();
+            
+            string infoTabuleiro = Jogo.Promover(idJogador, senhaJogador, personagem);
+
+            infoTabuleiro = infoTabuleiro.Replace("\r", "").Trim();
+            string[] infoSetor = infoTabuleiro.Split('\n');
+
+            // Limpa os personagens dos setores antes de atualizar
+            foreach (var key in personagensNosSetores.Keys.ToList())
+            {
+                personagensNosSetores[key].Clear();
+            }
+
+            // Atualiza os personagens com base na resposta do banco de dados
+            foreach (string item in infoSetor)
+            {
+                string[] dados = item.Split(',');
+                if (dados.Length == 2)
+                {
+                    int setorRecebido = int.Parse(dados[0].Trim());
+                    string personagemRecebido = dados[1].Trim();
+
+                    if (!personagensNosSetores.ContainsKey(setorRecebido))
+                    {
+                        personagensNosSetores[setorRecebido] = new List<string>();
+                    }
+                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
+                }
+            }
+
+            // Atualiza a contagem de personagens nos setores
+            foreach (var key in personagensNosSetores.Keys)
+            {
+                contagemSetores[key] = personagensNosSetores[key].Count;
+            }
+
+            // Atualiza a exibição no ListBox
+            foreach (var setorEntry in personagensNosSetores)
+            {
+                foreach (var personagemEntry in setorEntry.Value)
+                {
+                    lstTabuleiro.Items.Add($"Setor {setorEntry.Key}: {personagemEntry}");
+                }
+            }
+        }
+
+        private void btnComoJogar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnSair_Click(object sender, EventArgs e)
         {
 
         }
