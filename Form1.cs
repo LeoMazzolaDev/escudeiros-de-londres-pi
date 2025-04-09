@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -510,6 +510,7 @@ namespace kingMe.cs
 
             // Atualiza a contagem de personagens nos setores
             foreach (var key in personagensNosSetores.Keys)
+
             {
                 contagemSetores[key] = personagensNosSetores[key].Count;
             }
