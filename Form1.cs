@@ -69,6 +69,12 @@ namespace kingMe.cs
             { 4, new List<string>() }, { 5, new List<string>() }, { 10, new List<string>() }
         };
 
+
+        // Define os setores que não podem ser sorteados
+        private HashSet<int> setoresProibidos = new HashSet<int> { 0, 5, 10 };
+
+        private HashSet<string> personagensUsados = new HashSet<string>();
+
         public Form1()
         {
             InitializeComponent();
@@ -247,7 +253,33 @@ namespace kingMe.cs
                 }
             }
 
+            string retornoIniciar = Jogo.VerificarVez(idPartida);
 
+            // Dividir no primeiro \r\n encontrado
+            string[] separador = retornoIniciar.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
+
+            string infoPartida = separador[0]; // Primeira linha
+            string infoPosicao = separador.Length > 1 ? separador[1] : ""; // O resto da string
+
+            // Mostrar nome e jogador da vez
+            string[] vezInfo = infoPartida.Split(',');
+            int indice = Array.FindIndex(jogadores, elemento => elemento.StartsWith(vezInfo[0]));
+            string infoJogadorDaVez = jogadores[indice];
+            string[] jogadorDaVez = infoJogadorDaVez.Split(',');
+            idJogadorDaVez = jogadorDaVez[0];
+            nomeJogadorDaVez = jogadorDaVez[1];
+            lblIdDaVez.Text = "Id do jogador da vez:" + idJogadorDaVez;
+            lblNomeDaVez.Text = "Nome do jogador da vez:" + nomeJogadorDaVez;
+
+            //Informações do Jogo
+            string statusDaPartida = vezInfo[1];
+            string rodadaDaPartida = vezInfo[2];
+            string faseDaPartida = vezInfo[3];
+
+            lblRodada.Text = rodadaDaPartida;
+            lblFase.Text = faseDaPartida;
+
+            tmrVerificarVez.Enabled = true;
         }
 
         private void btnListarCartas_Click(object sender, EventArgs e)
@@ -301,32 +333,65 @@ namespace kingMe.cs
 
         private void btnColocarPersonagem_Click(object sender, EventArgs e)
         {
+            colocarPersonagem();
+        }
+
+        private void colocarPersonagem()
+        {
             if (idJogador.ToString() != idJogadorDaVez)
             {
                 MessageBox.Show("Ocorreu um erro: \nNão é a sua vez", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Conta quantos personagens já foram colocados
             int totalPersonagens = personagensNosSetores.Sum(s => s.Value.Count);
 
-            // Se for o 13º personagem, ele vai automaticamente para o setor 0
-            int setor = (totalPersonagens < 12) ? int.Parse(txtSetor.Text) : 0;
+            Random rnd = new Random();
 
-            if (!posicaoSetores.ContainsKey(setor))
+            int setor;
+            if (totalPersonagens >= 12)
             {
-                MessageBox.Show("Setor inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                setor = 0;
+            }
+            else
+            {
+                List<int> setoresDisponiveis = contagemSetores
+                    .Where(kv => !setoresProibidos.Contains(kv.Key) && kv.Value < limiteSetores[kv.Key])
+                    .Select(s => s.Key)
+                    .ToList();
+
+                if (setoresDisponiveis.Count == 0)
+                {
+                    MessageBox.Show("Todos os setores estão cheios!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                setor = setoresDisponiveis[rnd.Next(setoresDisponiveis.Count)];
+                label4.Text = setor.ToString();
+            }
+
+            // Filtra os personagens que ainda não foram usados
+            List<string> personagensDisponiveis = sprites.Keys
+                .Where(p => !personagensUsados.Contains(p))
+                .ToList();
+
+            if (personagensDisponiveis.Count == 0)
+            {
+                MessageBox.Show("Todos os personagens já foram alocados!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string personagem = txtPersonagem.Text.Trim();
+            string personagem = personagensDisponiveis[rnd.Next(personagensDisponiveis.Count)];
+            personagensUsados.Add(personagem);
+
+            label5.Text = personagem;
+
             if (string.IsNullOrEmpty(personagem) || personagem.Length != 1)
             {
                 MessageBox.Show("Personagem inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // Se não for o 13º personagem, verifica se há espaço no setor
             if (totalPersonagens < 12 && contagemSetores[setor] >= limiteSetores[setor])
             {
                 MessageBox.Show("O setor está cheio!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -335,18 +400,15 @@ namespace kingMe.cs
 
             lstTabuleiro.Items.Clear();
 
-            // Envia o personagem para o banco e recebe o estado atualizado do tabuleiro
             string infoTabuleiro = Jogo.ColocarPersonagem(idJogador, senhaJogador, setor, personagem);
             infoTabuleiro = infoTabuleiro.Replace("\r", "").Trim();
             string[] infoSetor = infoTabuleiro.Split('\n');
 
-            // Limpa os personagens dos setores antes de atualizar
             foreach (var key in personagensNosSetores.Keys.ToList())
             {
                 personagensNosSetores[key].Clear();
             }
 
-            // Atualiza os personagens com base na resposta do banco de dados
             foreach (string item in infoSetor)
             {
                 string[] dados = item.Split(',');
@@ -356,20 +418,17 @@ namespace kingMe.cs
                     string personagemRecebido = dados[1].Trim();
 
                     if (!personagensNosSetores.ContainsKey(setorRecebido))
-                    {
                         personagensNosSetores[setorRecebido] = new List<string>();
-                    }
+
                     personagensNosSetores[setorRecebido].Add(personagemRecebido);
                 }
             }
 
-            // Atualiza a contagem de personagens nos setores
             foreach (var key in personagensNosSetores.Keys)
             {
                 contagemSetores[key] = personagensNosSetores[key].Count;
             }
 
-            // Atualiza a exibição no ListBox
             foreach (var setorEntry in personagensNosSetores)
             {
                 foreach (var personagemEntry in setorEntry.Value)
@@ -378,6 +437,7 @@ namespace kingMe.cs
                 }
             }
         }
+
 
         private void pnlTeste_Paint(object sender, PaintEventArgs e)
         {
@@ -407,10 +467,10 @@ namespace kingMe.cs
         {
             lblIdDaVez.Text = "";
             lblNomeDaVez.Text = "";
-            string retorno = Jogo.VerificarVez(idPartida);
+            string retornoIniciar = Jogo.VerificarVez(idPartida);
 
             // Dividir no primeiro \r\n encontrado
-            string[] separador = retorno.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
+            string[] separador = retornoIniciar.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
 
             string infoPartida = separador[0]; // Primeira linha
             string infoPosicao = separador.Length > 1 ? separador[1] : ""; // O resto da string
@@ -424,6 +484,14 @@ namespace kingMe.cs
             nomeJogadorDaVez = jogadorDaVez[1];
             lblIdDaVez.Text = "Id do jogador da vez:" + idJogadorDaVez;
             lblNomeDaVez.Text = "Nome do jogador da vez:" + nomeJogadorDaVez;
+
+            //Informações do Jogo
+            string statusDaPartida = vezInfo[1];
+            string rodadaDaPartida = vezInfo[2];
+            string faseDaPartida = vezInfo[3];
+
+            lblRodada.Text = rodadaDaPartida;
+            lblFase.Text = faseDaPartida;
 
             // Atualizar tabuleiro
             infoPosicao = infoPosicao.Replace("\r", "");
@@ -460,6 +528,90 @@ namespace kingMe.cs
 
             // Atualiza a exibição do painel
             pnlTeste2.Invalidate();
+        }
+
+        private void verificarVez()
+        {
+            lblIdDaVez.Text = "";
+            lblNomeDaVez.Text = "";
+            string retornoIniciar = Jogo.VerificarVez(idPartida);
+
+            // Dividir no primeiro \r\n encontrado
+            string[] separador = retornoIniciar.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
+
+            string infoPartida = separador[0]; // Primeira linha
+            string infoPosicao = separador.Length > 1 ? separador[1] : ""; // O resto da string
+
+            // Mostrar nome e jogador da vez
+            string[] vezInfo = infoPartida.Split(',');
+            int indice = Array.FindIndex(jogadores, elemento => elemento.StartsWith(vezInfo[0]));
+            string infoJogadorDaVez = jogadores[indice];
+            string[] jogadorDaVez = infoJogadorDaVez.Split(',');
+            idJogadorDaVez = jogadorDaVez[0];
+            nomeJogadorDaVez = jogadorDaVez[1];
+            lblIdDaVez.Text = "Id do jogador da vez:" + idJogadorDaVez;
+            lblNomeDaVez.Text = "Nome do jogador da vez:" + nomeJogadorDaVez;
+
+            //Informações do Jogo
+            string statusDaPartida = vezInfo[1];
+            string rodadaDaPartida = vezInfo[2];
+            string faseDaPartida = vezInfo[3];
+
+            lblRodada.Text = rodadaDaPartida;
+            lblFase.Text = faseDaPartida;
+
+            // Atualizar tabuleiro
+            infoPosicao = infoPosicao.Replace("\r", "");
+            string[] infoSetor = infoPosicao.Split('\n');
+
+            // Limpa os personagens dos setores antes de atualizar
+            foreach (var key in personagensNosSetores.Keys.ToList())
+            {
+                personagensNosSetores[key].Clear();
+            }
+
+            // Atualiza os personagens com base na resposta do banco de dados
+            foreach (string item in infoSetor)
+            {
+                string[] dados = item.Split(',');
+                if (dados.Length == 2)
+                {
+                    int setorRecebido = int.Parse(dados[0].Trim());
+                    string personagemRecebido = dados[1].Trim();
+
+                    if (!personagensNosSetores.ContainsKey(setorRecebido))
+                    {
+                        personagensNosSetores[setorRecebido] = new List<string>();
+                    }
+                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
+                }
+            }
+
+            // Atualiza a contagem de personagens nos setores
+            foreach (var key in personagensNosSetores.Keys)
+            {
+                contagemSetores[key] = personagensNosSetores[key].Count;
+            }
+
+            // Limpa e atualiza o HashSet de personagens usados com base na resposta do banco
+            personagensUsados.Clear();
+            foreach (var lista in personagensNosSetores.Values)
+            {
+                foreach (var personagem in lista)
+                {
+                    personagensUsados.Add(personagem);
+                }
+            }
+
+            // Atualiza a exibição do painel
+            pnlTeste2.Invalidate();
+
+            int totalPersonagens = personagensNosSetores.Sum(s => s.Value.Count);
+
+            if (int.Parse(idJogadorDaVez) == idJogador && totalPersonagens < 12)
+            {
+                colocarPersonagem();
+            }
         }
 
         private void btnMostrarImg_Click(object sender, EventArgs e)
@@ -533,6 +685,19 @@ namespace kingMe.cs
         private void btnSair_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnVotar_Click(object sender, EventArgs e)
+        {
+            string voto = txtVoto.Text.Trim();
+            string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
+        }
+
+        private void tmrVerificarVez_Tick(object sender, EventArgs e)
+        {
+            tmrVerificarVez.Enabled = false;
+            verificarVez();
+            tmrVerificarVez.Enabled = true;
         }
     }
 }
