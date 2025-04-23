@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -22,6 +23,7 @@ namespace kingMe.cs
         private string[] jogadores;
         private string idJogadorDaVez;
         private string nomeJogadorDaVez;
+        private bool acabouDeVotar;
 
         private Dictionary<string, Image> sprites = new Dictionary<string, Image>()
         {
@@ -535,6 +537,7 @@ namespace kingMe.cs
             lblIdDaVez.Text = "";
             lblNomeDaVez.Text = "";
             string retornoIniciar = Jogo.VerificarVez(idPartida);
+            label8.Text = retornoIniciar;
 
             // Dividir no primeiro \r\n encontrado
             string[] separador = retornoIniciar.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
@@ -612,6 +615,24 @@ namespace kingMe.cs
             {
                 colocarPersonagem();
             }
+
+            if (faseDaPartida == "P")
+            {
+                PromoverPersonagemDaRodada();
+            }
+
+            if (faseDaPartida == "V")
+            {
+                if (!acabouDeVotar)
+                {
+                    Votar();
+                    verificarVez(); // Atualiza tabuleiro depois do voto
+                }
+                else
+                {
+                    acabouDeVotar = false; // Reseta para próxima vez
+                }
+            }
         }
 
         private void btnMostrarImg_Click(object sender, EventArgs e)
@@ -677,6 +698,48 @@ namespace kingMe.cs
             }
         }
 
+        private void PromoverPersonagemDaRodada()
+        {
+            List<(string personagem, int setorAtual, int proximoSetor)> promoviveis = new List<(string, int, int)>();
+
+            // Monta a lista de personagens que podem ser promovidos
+            foreach (var setor in personagensNosSetores.Keys)
+            {
+                int proximoSetor = setor == 5 ? 10 : setor + 1;
+
+                if (!limiteSetores.ContainsKey(proximoSetor) || contagemSetores[proximoSetor] >= limiteSetores[proximoSetor])
+                    continue;
+
+                foreach (var personagem in personagensNosSetores[setor])
+                {
+                    promoviveis.Add((personagem, setor, proximoSetor));
+                }
+            }
+
+            if (promoviveis.Count == 0)
+            {
+                MessageBox.Show("Nenhum personagem pode ser promovido nesta rodada.");
+                return;
+            }
+
+            // Sorteia um personagem entre os possíveis
+            Random rand = new Random();
+            var escolhido = promoviveis[rand.Next(promoviveis.Count)];
+
+            // Atualiza os dicionários
+            personagensNosSetores[escolhido.setorAtual].Remove(escolhido.personagem);
+            contagemSetores[escolhido.setorAtual]--;
+
+            personagensNosSetores[escolhido.proximoSetor].Add(escolhido.personagem);
+            contagemSetores[escolhido.proximoSetor]++;
+
+            // Chama a função de promoção
+            Jogo.Promover(idJogador, senhaJogador, escolhido.personagem);
+
+            label7.Text = escolhido.personagem;
+        }
+
+
         private void btnComoJogar_Click(object sender, EventArgs e)
         {
 
@@ -691,6 +754,20 @@ namespace kingMe.cs
         {
             string voto = txtVoto.Text.Trim();
             string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
+        }
+
+        private void Votar()
+        {
+            string voto;
+
+            Random sorteio = new Random();
+            int votoSN = sorteio.Next(0, 2);
+
+            voto = votoSN == 0 ? "N" : "S";
+
+            string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
+            label7.Text = voto;
+            acabouDeVotar = true;
         }
 
         private void tmrVerificarVez_Tick(object sender, EventArgs e)
