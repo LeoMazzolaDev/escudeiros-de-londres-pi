@@ -59,6 +59,9 @@
             this.pnlLobby = new System.Windows.Forms.Panel();
             this.btnIniciar = new System.Windows.Forms.Button();
             this.pnlPartida = new System.Windows.Forms.Panel();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.lblRodada = new System.Windows.Forms.Label();
@@ -88,9 +91,7 @@
             this.btnComoJogar = new System.Windows.Forms.Button();
             this.btnJogar = new System.Windows.Forms.Button();
             this.tmrVerificarVez = new System.Windows.Forms.Timer(this.components);
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
+            this.cmbOpcoes = new System.Windows.Forms.ComboBox();
             this.pnlCriarPartida.SuspendLayout();
             this.pnlEntrarPartida.SuspendLayout();
             this.pnlEscolhaJogar.SuspendLayout();
@@ -111,7 +112,7 @@
             // 
             // btnListarPartidas
             // 
-            this.btnListarPartidas.Location = new System.Drawing.Point(304, 87);
+            this.btnListarPartidas.Location = new System.Drawing.Point(266, 87);
             this.btnListarPartidas.Name = "btnListarPartidas";
             this.btnListarPartidas.Size = new System.Drawing.Size(84, 23);
             this.btnListarPartidas.TabIndex = 2;
@@ -293,6 +294,7 @@
             this.pnlCriarPartida.Name = "pnlCriarPartida";
             this.pnlCriarPartida.Size = new System.Drawing.Size(1264, 681);
             this.pnlCriarPartida.TabIndex = 23;
+            this.pnlCriarPartida.Visible = false;
             // 
             // chkPermissaoIniciar
             // 
@@ -306,6 +308,7 @@
             // 
             // pnlEntrarPartida
             // 
+            this.pnlEntrarPartida.Controls.Add(this.cmbOpcoes);
             this.pnlEntrarPartida.Controls.Add(this.lstListarPartidas);
             this.pnlEntrarPartida.Controls.Add(this.btnListarPartidas);
             this.pnlEntrarPartida.Controls.Add(this.btnEntrar);
@@ -321,6 +324,7 @@
             this.pnlEntrarPartida.Name = "pnlEntrarPartida";
             this.pnlEntrarPartida.Size = new System.Drawing.Size(1264, 681);
             this.pnlEntrarPartida.TabIndex = 12;
+            this.pnlEntrarPartida.Visible = false;
             // 
             // pnlEscolhaJogar
             // 
@@ -331,6 +335,7 @@
             this.pnlEscolhaJogar.Name = "pnlEscolhaJogar";
             this.pnlEscolhaJogar.Size = new System.Drawing.Size(1264, 681);
             this.pnlEscolhaJogar.TabIndex = 28;
+            this.pnlEscolhaJogar.Visible = false;
             // 
             // btnCriarUmaPartida
             // 
@@ -362,6 +367,7 @@
             this.pnlLobby.Name = "pnlLobby";
             this.pnlLobby.Size = new System.Drawing.Size(1264, 681);
             this.pnlLobby.TabIndex = 22;
+            this.pnlLobby.Visible = false;
             // 
             // btnIniciar
             // 
@@ -406,7 +412,41 @@
             this.pnlPartida.Name = "pnlPartida";
             this.pnlPartida.Size = new System.Drawing.Size(1264, 681);
             this.pnlPartida.TabIndex = 15;
+            this.pnlPartida.Visible = false;
             this.pnlPartida.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlPartida_Paint);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label8.Location = new System.Drawing.Point(276, 280);
+            this.label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(64, 25);
+            this.label8.TabIndex = 28;
+            this.label8.Text = "label8";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.Location = new System.Drawing.Point(276, 238);
+            this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(64, 25);
+            this.label7.TabIndex = 27;
+            this.label7.Text = "label7";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Location = new System.Drawing.Point(276, 196);
+            this.label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(64, 25);
+            this.label6.TabIndex = 26;
+            this.label6.Text = "label6";
             // 
             // label5
             // 
@@ -471,7 +511,7 @@
             // txtVoto
             // 
             this.txtVoto.Location = new System.Drawing.Point(1073, 447);
-            this.txtVoto.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtVoto.Margin = new System.Windows.Forms.Padding(2);
             this.txtVoto.Name = "txtVoto";
             this.txtVoto.Size = new System.Drawing.Size(31, 20);
             this.txtVoto.TabIndex = 20;
@@ -528,7 +568,7 @@
             // txtSetor
             // 
             this.txtSetor.Location = new System.Drawing.Point(1073, 325);
-            this.txtSetor.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtSetor.Margin = new System.Windows.Forms.Padding(2);
             this.txtSetor.Name = "txtSetor";
             this.txtSetor.Size = new System.Drawing.Size(95, 20);
             this.txtSetor.TabIndex = 12;
@@ -536,7 +576,7 @@
             // btnColocarPersonagem
             // 
             this.btnColocarPersonagem.Location = new System.Drawing.Point(1073, 352);
-            this.btnColocarPersonagem.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnColocarPersonagem.Margin = new System.Windows.Forms.Padding(2);
             this.btnColocarPersonagem.Name = "btnColocarPersonagem";
             this.btnColocarPersonagem.Size = new System.Drawing.Size(74, 59);
             this.btnColocarPersonagem.TabIndex = 11;
@@ -547,7 +587,7 @@
             // txtPersonagem
             // 
             this.txtPersonagem.Location = new System.Drawing.Point(1073, 280);
-            this.txtPersonagem.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.txtPersonagem.Margin = new System.Windows.Forms.Padding(2);
             this.txtPersonagem.Name = "txtPersonagem";
             this.txtPersonagem.Size = new System.Drawing.Size(94, 20);
             this.txtPersonagem.TabIndex = 10;
@@ -556,7 +596,7 @@
             // 
             this.lstNomePersonagens.FormattingEnabled = true;
             this.lstNomePersonagens.Location = new System.Drawing.Point(1073, 33);
-            this.lstNomePersonagens.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.lstNomePersonagens.Margin = new System.Windows.Forms.Padding(2);
             this.lstNomePersonagens.Name = "lstNomePersonagens";
             this.lstNomePersonagens.Size = new System.Drawing.Size(167, 225);
             this.lstNomePersonagens.TabIndex = 8;
@@ -576,7 +616,7 @@
             // 
             this.btnVerificarVez.AccessibleName = "VerificarVez";
             this.btnVerificarVez.Location = new System.Drawing.Point(38, 21);
-            this.btnVerificarVez.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnVerificarVez.Margin = new System.Windows.Forms.Padding(2);
             this.btnVerificarVez.Name = "btnVerificarVez";
             this.btnVerificarVez.Size = new System.Drawing.Size(132, 25);
             this.btnVerificarVez.TabIndex = 5;
@@ -588,7 +628,7 @@
             // 
             this.lstTabuleiro.FormattingEnabled = true;
             this.lstTabuleiro.Location = new System.Drawing.Point(1073, 483);
-            this.lstTabuleiro.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.lstTabuleiro.Margin = new System.Windows.Forms.Padding(2);
             this.lstTabuleiro.Name = "lstTabuleiro";
             this.lstTabuleiro.Size = new System.Drawing.Size(167, 160);
             this.lstTabuleiro.TabIndex = 4;
@@ -696,48 +736,29 @@
             this.tmrVerificarVez.Interval = 5000;
             this.tmrVerificarVez.Tick += new System.EventHandler(this.tmrVerificarVez_Tick);
             // 
-            // label6
+            // cmbOpcoes
             // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label6.Location = new System.Drawing.Point(276, 196);
-            this.label6.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(64, 25);
-            this.label6.TabIndex = 26;
-            this.label6.Text = "label6";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label7.Location = new System.Drawing.Point(276, 238);
-            this.label7.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(64, 25);
-            this.label7.TabIndex = 27;
-            this.label7.Text = "label7";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label8.Location = new System.Drawing.Point(276, 280);
-            this.label8.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(64, 25);
-            this.label8.TabIndex = 28;
-            this.label8.Text = "label8";
+            this.cmbOpcoes.FormattingEnabled = true;
+            this.cmbOpcoes.Items.AddRange(new object[] {
+            "T",
+            "A",
+            "J",
+            "F"});
+            this.cmbOpcoes.Location = new System.Drawing.Point(357, 89);
+            this.cmbOpcoes.Name = "cmbOpcoes";
+            this.cmbOpcoes.Size = new System.Drawing.Size(32, 21);
+            this.cmbOpcoes.TabIndex = 21;
+            this.cmbOpcoes.Text = "A";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1264, 681);
-            this.Controls.Add(this.pnlPartida);
-            this.Controls.Add(this.pnlMenuInicial);
             this.Controls.Add(this.pnlEntrarPartida);
             this.Controls.Add(this.pnlLobby);
+            this.Controls.Add(this.pnlMenuInicial);
+            this.Controls.Add(this.pnlPartida);
             this.Controls.Add(this.lblNomeGrupo);
             this.Controls.Add(this.lblVersao);
             this.Controls.Add(this.pnlCriarPartida);
@@ -822,6 +843,7 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.ComboBox cmbOpcoes;
     }
 }
 

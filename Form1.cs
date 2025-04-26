@@ -71,7 +71,6 @@ namespace kingMe.cs
             { 4, new List<string>() }, { 5, new List<string>() }, { 10, new List<string>() }
         };
 
-
         // Define os setores que não podem ser sorteados
         private HashSet<int> setoresProibidos = new HashSet<int> { 0, 5, 10 };
 
@@ -82,11 +81,6 @@ namespace kingMe.cs
             InitializeComponent();
             pnlTeste2.Paint += pnlTeste_Paint;
             string versaoJogo = Jogo.versao;
-            pnlEscolhaJogar.Visible = false;
-            pnlEntrarPartida.Visible = false;
-            pnlCriarPartida.Visible = false;
-            pnlLobby.Visible = false;
-            pnlPartida.Visible = false;
             this.Text = "Escudeiros de Londres | versão: " + versaoJogo;
         }
 
@@ -117,7 +111,8 @@ namespace kingMe.cs
 
         private void btnListarPartidas_Click(object sender, EventArgs e)
         {
-            string retorno = Jogo.ListarPartidas("T");
+            string status = cmbOpcoes.Text;
+            string retorno = Jogo.ListarPartidas(status);
 
             retorno = retorno.Replace("\r", "");
             retorno = retorno.Substring(0, retorno.Length - 1);
@@ -154,7 +149,11 @@ namespace kingMe.cs
             }
         }
 
-
+        private void btnEntrarNasPartidas_Click(object sender, EventArgs e)
+        {
+            pnlEscolhaJogar.Visible = false;
+            pnlEntrarPartida.Visible = true;
+        }
 
         private void btnEntrar_Click(object sender, EventArgs e)
         {
@@ -177,8 +176,6 @@ namespace kingMe.cs
                 pnlEntrarPartida.Visible = false;
                 pnlLobby.Visible = true;
 
-
-
                 idPartida = Convert.ToInt32(informacaoPartida[0]);
                 string username = txtUsername.Text;
                 string senha = txtSenhaEntrar.Text;
@@ -193,8 +190,6 @@ namespace kingMe.cs
 
                 idJogador = Convert.ToInt32(idJogadorTxt);
 
-
-
                 string listarJogadores = Jogo.ListarJogadores(idPartida);
                 listarJogadores = listarJogadores.Replace("\r", "");
                 listarJogadores = listarJogadores.Substring(0, listarJogadores.Length - 1);
@@ -208,17 +203,10 @@ namespace kingMe.cs
             }
         }
 
-
         private void btnJogar_Click_1(object sender, EventArgs e)
         {
             pnlMenuInicial.Visible = false;
             pnlEscolhaJogar.Visible = true;
-        }
-
-        private void btnEntrarNasPartidas_Click(object sender, EventArgs e)
-        {
-            pnlEscolhaJogar.Visible = false;
-            pnlEntrarPartida.Visible = true;
         }
 
         private void btnCriarUmaPartida_Click(object sender, EventArgs e)
@@ -318,24 +306,9 @@ namespace kingMe.cs
             }
         }
 
-        private void btnConfiguracoes_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void lstNomePersonagens_SelectedIndexChanged(object sender, EventArgs e)
         {
 
-        }
-
-        private void pnlPartida_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void btnColocarPersonagem_Click(object sender, EventArgs e)
-        {
-            colocarPersonagem();
         }
 
         private void colocarPersonagem()
@@ -406,30 +379,7 @@ namespace kingMe.cs
             infoTabuleiro = infoTabuleiro.Replace("\r", "").Trim();
             string[] infoSetor = infoTabuleiro.Split('\n');
 
-            foreach (var key in personagensNosSetores.Keys.ToList())
-            {
-                personagensNosSetores[key].Clear();
-            }
-
-            foreach (string item in infoSetor)
-            {
-                string[] dados = item.Split(',');
-                if (dados.Length == 2)
-                {
-                    int setorRecebido = int.Parse(dados[0].Trim());
-                    string personagemRecebido = dados[1].Trim();
-
-                    if (!personagensNosSetores.ContainsKey(setorRecebido))
-                        personagensNosSetores[setorRecebido] = new List<string>();
-
-                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
-                }
-            }
-
-            foreach (var key in personagensNosSetores.Keys)
-            {
-                contagemSetores[key] = personagensNosSetores[key].Count;
-            }
+            atualizarDicionarios(infoSetor);
 
             foreach (var setorEntry in personagensNosSetores)
             {
@@ -440,118 +390,100 @@ namespace kingMe.cs
             }
         }
 
-
-        private void pnlTeste_Paint(object sender, PaintEventArgs e)
-        {
-            Graphics g = e.Graphics;
-
-            // Desenha os personagens de acordo com os setores
-            foreach (var setor in personagensNosSetores)
-            {
-                int index = 0;
-                foreach (var personagem in setor.Value)
+        private void PromoverPersonagemDaRodada()
                 {
-                    if (sprites.ContainsKey(personagem))
+                    List<(string personagem, int setorAtual, int proximoSetor)> promoviveis = new List<(string, int, int)>();
+
+                    // Monta a lista de personagens que podem ser promovidos
+                    foreach (var setor in personagensNosSetores.Keys)
                     {
-                        Point posicaoBase = posicaoSetores[setor.Key];
-                        Point posicaoFinal = new Point(posicaoBase.X + (index * 65), posicaoBase.Y);
+                        int proximoSetor = setor == 5 ? 10 : setor + 1;
 
-                        g.DrawImage(sprites[personagem], posicaoFinal);
+                        if (!limiteSetores.ContainsKey(proximoSetor) || contagemSetores[proximoSetor] >= limiteSetores[proximoSetor])
+                            continue;
+
+                        foreach (var personagem in personagensNosSetores[setor])
+                        {
+                            promoviveis.Add((personagem, setor, proximoSetor));
+                        }
                     }
-                    index++;
+
+                    if (promoviveis.Count == 0)
+                    {
+                        MessageBox.Show("Nenhum personagem pode ser promovido nesta rodada.");
+                        return;
+                    }
+
+                    // Sorteia um personagem entre os possíveis
+                    Random rand = new Random();
+                    var escolhido = promoviveis[rand.Next(promoviveis.Count)];
+
+                    // Atualiza os dicionários
+                    personagensNosSetores[escolhido.setorAtual].Remove(escolhido.personagem);
+                    contagemSetores[escolhido.setorAtual]--;
+
+                    personagensNosSetores[escolhido.proximoSetor].Add(escolhido.personagem);
+                    contagemSetores[escolhido.proximoSetor]++;
+
+                    // Chama a função de promoção
+                    Jogo.Promover(idJogador, senhaJogador, escolhido.personagem);
+
+                    label7.Text = escolhido.personagem;
                 }
-            }
-        }
 
-
-        // Código para verificar quem é o jogador da vez
-        private void btnVerificarVez_Click(object sender, EventArgs e)
+        private void Votar()
         {
-            lblIdDaVez.Text = "";
-            lblNomeDaVez.Text = "";
-            string retornoIniciar = Jogo.VerificarVez(idPartida);
+            string voto;
 
-            // Dividir no primeiro \r\n encontrado
-            string[] separador = retornoIniciar.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
+            Random sorteio = new Random();
+            int votoSN = sorteio.Next(0, 2);
 
-            string infoPartida = separador[0]; // Primeira linha
-            string infoPosicao = separador.Length > 1 ? separador[1] : ""; // O resto da string
+            voto = votoSN == 0 ? "N" : "S";
 
-            // Mostrar nome e jogador da vez
-            string[] vezInfo = infoPartida.Split(',');
-            int indice = Array.FindIndex(jogadores, elemento => elemento.StartsWith(vezInfo[0]));
-            string infoJogadorDaVez = jogadores[indice];
-            string[] jogadorDaVez = infoJogadorDaVez.Split(',');
-            idJogadorDaVez = jogadorDaVez[0];
-            nomeJogadorDaVez = jogadorDaVez[1];
-            lblIdDaVez.Text = "Id do jogador da vez:" + idJogadorDaVez;
-            lblNomeDaVez.Text = "Nome do jogador da vez:" + nomeJogadorDaVez;
-
-            //Informações do Jogo
-            string statusDaPartida = vezInfo[1];
-            string rodadaDaPartida = vezInfo[2];
-            string faseDaPartida = vezInfo[3];
-
-            lblRodada.Text = rodadaDaPartida;
-            lblFase.Text = faseDaPartida;
-
-            // Atualizar tabuleiro
-            infoPosicao = infoPosicao.Replace("\r", "");
-            string[] infoSetor = infoPosicao.Split('\n');
-
-            // Limpa os personagens dos setores antes de atualizar
-            foreach (var key in personagensNosSetores.Keys.ToList())
-            {
-                personagensNosSetores[key].Clear();
-            }
-
-            // Atualiza os personagens com base na resposta do banco de dados
-            foreach (string item in infoSetor)
-            {
-                string[] dados = item.Split(',');
-                if (dados.Length == 2)
-                {
-                    int setorRecebido = int.Parse(dados[0].Trim());
-                    string personagemRecebido = dados[1].Trim();
-
-                    if (!personagensNosSetores.ContainsKey(setorRecebido))
-                    {
-                        personagensNosSetores[setorRecebido] = new List<string>();
-                    }
-                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
-                }
-            }
-
-            // Atualiza a contagem de personagens nos setores
-            foreach (var key in personagensNosSetores.Keys)
-            {
-                contagemSetores[key] = personagensNosSetores[key].Count;
-            }
-
-            // Atualiza a exibição do painel
-            pnlTeste2.Invalidate();
+            string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
+            label7.Text = voto;
+            acabouDeVotar = true;
         }
 
         private void verificarVez()
         {
+            // Labels com infos do jogador
             lblIdDaVez.Text = "";
             lblNomeDaVez.Text = "";
-            string retornoIniciar = Jogo.VerificarVez(idPartida);
-            label8.Text = retornoIniciar;
 
-            // Dividir no primeiro \r\n encontrado
-            string[] separador = retornoIniciar.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
 
-            string infoPartida = separador[0]; // Primeira linha
-            string infoPosicao = separador.Length > 1 ? separador[1] : ""; // O resto da string
+            string retornoPartida = Jogo.VerificarVez(idPartida);
+            label8.Text = retornoPartida; // <--- remover dps
+
+            // Dividir no primeiro \r\n encontrado separando em duas partes:
+            string[] separador = retornoPartida.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
+            /* 
+            separador[0]: id do jogador, status, rodada e fase;
+            separador[1]: todas as posições dos personagens no tabuleiro
+            */
+            string infoPartida = separador[0];
+            string infoPosicaoPersonagem = separador.Length > 1 ? separador[1] : ""; // posições dos personagens no tabuleiro
 
             // Mostrar nome e jogador da vez
             string[] vezInfo = infoPartida.Split(',');
-            int indice = Array.FindIndex(jogadores, elemento => elemento.StartsWith(vezInfo[0]));
-            string infoJogadorDaVez = jogadores[indice];
+            /*
+            vezInfo[0]: id do jogador.  
+            vezInfo[1]: status da partida.
+            vezInfo[2]: rodada da partida.
+            vezInfo[3]: fase da partida.
+            */
+            int id = Array.FindIndex(jogadores, elemento => elemento.StartsWith(vezInfo[0]));
+            string infoJogadorDaVez = jogadores[id]; // id, nome, pontuação \n\r
             string[] jogadorDaVez = infoJogadorDaVez.Split(',');
+            /*
+            jogadorDaVez[0]: id do jogador.  
+            jogadorDaVez[1]: nome do jogador.
+            jogadorDaVez[2]: pontuação do jogador.
+            */
             idJogadorDaVez = jogadorDaVez[0];
             nomeJogadorDaVez = jogadorDaVez[1];
+
+            // imprimir id e nome do jogador na tela
             lblIdDaVez.Text = "Id do jogador da vez:" + idJogadorDaVez;
             lblNomeDaVez.Text = "Nome do jogador da vez:" + nomeJogadorDaVez;
 
@@ -564,52 +496,20 @@ namespace kingMe.cs
             lblFase.Text = faseDaPartida;
 
             // Atualizar tabuleiro
-            infoPosicao = infoPosicao.Replace("\r", "");
-            string[] infoSetor = infoPosicao.Split('\n');
+            infoPosicaoPersonagem = infoPosicaoPersonagem.Replace("\r", "");
+            string[] infoSetor = infoPosicaoPersonagem.Split('\n');
+            /*
+            infoSetor[0]: setor do personagem 1, caracter do personagem 1 
+            infoSetor[1]: setor do personagem 2, caracter do personagem 2
+                                    ....
+            */
 
-            // Limpa os personagens dos setores antes de atualizar
-            foreach (var key in personagensNosSetores.Keys.ToList())
-            {
-                personagensNosSetores[key].Clear();
-            }
+            atualizarDicionarios(infoSetor);
 
-            // Atualiza os personagens com base na resposta do banco de dados
-            foreach (string item in infoSetor)
-            {
-                string[] dados = item.Split(',');
-                if (dados.Length == 2)
-                {
-                    int setorRecebido = int.Parse(dados[0].Trim());
-                    string personagemRecebido = dados[1].Trim();
-
-                    if (!personagensNosSetores.ContainsKey(setorRecebido))
-                    {
-                        personagensNosSetores[setorRecebido] = new List<string>();
-                    }
-                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
-                }
-            }
-
-            // Atualiza a contagem de personagens nos setores
-            foreach (var key in personagensNosSetores.Keys)
-            {
-                contagemSetores[key] = personagensNosSetores[key].Count;
-            }
-
-            // Limpa e atualiza o HashSet de personagens usados com base na resposta do banco
-            personagensUsados.Clear();
-            foreach (var lista in personagensNosSetores.Values)
-            {
-                foreach (var personagem in lista)
-                {
-                    personagensUsados.Add(personagem);
-                }
-            }
-
-            // Atualiza a exibição do painel
+            // Atualiza a exibição do tabuleiro
             pnlTeste2.Invalidate();
 
-            int totalPersonagens = personagensNosSetores.Sum(s => s.Value.Count);
+            int totalPersonagens = contagemSetores.Sum(s => s.Value);
 
             if (int.Parse(idJogadorDaVez) == idJogador && totalPersonagens < 12)
             {
@@ -635,58 +535,97 @@ namespace kingMe.cs
             }
         }
 
-        private void btnMostrarImg_Click(object sender, EventArgs e)
+        private void atualizarDicionarios(string[] infoSetor)
         {
-            //if (picAprov.Visible == false)
-            //{
-            //    picAprov.Visible = true;
-            //}
-        }
-
-        private void picAprov_Click(object sender, EventArgs e)
-        {
-
-        }
-
-
-        private void btnPromoverPersonagem_Click(object sender, EventArgs e)
-        {
-            string personagem = txtPersonagem.Text.Trim();
-            
-            string infoTabuleiro = Jogo.Promover(idJogador, senhaJogador, personagem);
-
-            infoTabuleiro = infoTabuleiro.Replace("\r", "").Trim();
-            string[] infoSetor = infoTabuleiro.Split('\n');
-
-            // Limpa os personagens dos setores antes de atualizar
+  
+            // Limpa o dicionario que guarda cada personagem em cada setor.
             foreach (var key in personagensNosSetores.Keys.ToList())
             {
                 personagensNosSetores[key].Clear();
             }
 
-            // Atualiza os personagens com base na resposta do banco de dados
+            // Atualiza o dicionario com os personagens com base na resposta do banco de dados.
             foreach (string item in infoSetor)
             {
-                string[] dados = item.Split(',');
-                if (dados.Length == 2)
+                string[] dadosDoPersonagem = item.Split(',');
+                /*
+                 dados[0]: setor
+                 dados[1]: caracter
+                 */
+                if (dadosDoPersonagem.Length == 2)
                 {
-                    int setorRecebido = int.Parse(dados[0].Trim());
-                    string personagemRecebido = dados[1].Trim();
-
-                    if (!personagensNosSetores.ContainsKey(setorRecebido))
-                    {
-                        personagensNosSetores[setorRecebido] = new List<string>();
-                    }
+                    int setorRecebido = int.Parse(dadosDoPersonagem[0].Trim());
+                    string personagemRecebido = dadosDoPersonagem[1].Trim();
                     personagensNosSetores[setorRecebido].Add(personagemRecebido);
                 }
             }
 
-            // Atualiza a contagem de personagens nos setores
+            // Atualiza o dicionario de contagem de personagens nos setores.
             foreach (var key in personagensNosSetores.Keys)
-
             {
                 contagemSetores[key] = personagensNosSetores[key].Count;
             }
+
+            // Limpa e atualiza o HashSet de personagens usados com base na resposta do banco.
+            personagensUsados.Clear();
+            foreach (var lista in personagensNosSetores.Values)
+            {
+                foreach (var personagem in lista)
+                {
+                    personagensUsados.Add(personagem);
+                }
+            }
+        }
+
+        private void tmrVerificarVez_Tick(object sender, EventArgs e)
+        {
+            tmrVerificarVez.Enabled = false;
+            verificarVez();
+            tmrVerificarVez.Enabled = true;
+        }
+
+        private void pnlPartida_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void pnlTeste_Paint(object sender, PaintEventArgs e)
+        {
+            Graphics g = e.Graphics;
+
+            // Desenha os personagens de acordo com os setores
+            foreach (var setor in personagensNosSetores)
+            {
+                int index = 0;
+                foreach (var personagem in setor.Value)
+                {
+                    if (sprites.ContainsKey(personagem))
+                    {
+                        Point posicaoBase = posicaoSetores[setor.Key];
+                        Point posicaoFinal = new Point(posicaoBase.X + (index * 65), posicaoBase.Y);
+
+                        g.DrawImage(sprites[personagem], posicaoFinal);
+                    }
+                    index++;
+                }
+            }
+        }
+
+        private void btnColocarPersonagem_Click(object sender, EventArgs e)
+        {
+            colocarPersonagem();
+        }
+
+        private void btnPromoverPersonagem_Click(object sender, EventArgs e)
+        {
+            string personagem = txtPersonagem.Text.Trim();
+
+            string infoTabuleiro = Jogo.Promover(idJogador, senhaJogador, personagem);
+
+            infoTabuleiro = infoTabuleiro.Replace("\r", "").Trim();
+            string[] infoSetor = infoTabuleiro.Split('\n');
+
+            atualizarDicionarios(infoSetor);
 
             // Atualiza a exibição no ListBox
             foreach (var setorEntry in personagensNosSetores)
@@ -698,47 +637,21 @@ namespace kingMe.cs
             }
         }
 
-        private void PromoverPersonagemDaRodada()
+        private void btnVotar_Click(object sender, EventArgs e)
         {
-            List<(string personagem, int setorAtual, int proximoSetor)> promoviveis = new List<(string, int, int)>();
-
-            // Monta a lista de personagens que podem ser promovidos
-            foreach (var setor in personagensNosSetores.Keys)
-            {
-                int proximoSetor = setor == 5 ? 10 : setor + 1;
-
-                if (!limiteSetores.ContainsKey(proximoSetor) || contagemSetores[proximoSetor] >= limiteSetores[proximoSetor])
-                    continue;
-
-                foreach (var personagem in personagensNosSetores[setor])
-                {
-                    promoviveis.Add((personagem, setor, proximoSetor));
-                }
-            }
-
-            if (promoviveis.Count == 0)
-            {
-                MessageBox.Show("Nenhum personagem pode ser promovido nesta rodada.");
-                return;
-            }
-
-            // Sorteia um personagem entre os possíveis
-            Random rand = new Random();
-            var escolhido = promoviveis[rand.Next(promoviveis.Count)];
-
-            // Atualiza os dicionários
-            personagensNosSetores[escolhido.setorAtual].Remove(escolhido.personagem);
-            contagemSetores[escolhido.setorAtual]--;
-
-            personagensNosSetores[escolhido.proximoSetor].Add(escolhido.personagem);
-            contagemSetores[escolhido.proximoSetor]++;
-
-            // Chama a função de promoção
-            Jogo.Promover(idJogador, senhaJogador, escolhido.personagem);
-
-            label7.Text = escolhido.personagem;
+            string voto = txtVoto.Text.Trim();
+            string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
         }
 
+        private void btnVerificarVez_Click(object sender, EventArgs e)
+        {
+            verificarVez();
+        }
+
+        private void btnConfiguracoes_Click(object sender, EventArgs e)
+        {
+
+        }
 
         private void btnComoJogar_Click(object sender, EventArgs e)
         {
@@ -750,31 +663,5 @@ namespace kingMe.cs
 
         }
 
-        private void btnVotar_Click(object sender, EventArgs e)
-        {
-            string voto = txtVoto.Text.Trim();
-            string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
-        }
-
-        private void Votar()
-        {
-            string voto;
-
-            Random sorteio = new Random();
-            int votoSN = sorteio.Next(0, 2);
-
-            voto = votoSN == 0 ? "N" : "S";
-
-            string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
-            label7.Text = voto;
-            acabouDeVotar = true;
-        }
-
-        private void tmrVerificarVez_Tick(object sender, EventArgs e)
-        {
-            tmrVerificarVez.Enabled = false;
-            verificarVez();
-            tmrVerificarVez.Enabled = true;
-        }
     }
 }
