@@ -92,6 +92,8 @@
             this.btnJogar = new System.Windows.Forms.Button();
             this.tmrVerificarVez = new System.Windows.Forms.Timer(this.components);
             this.cmbOpcoes = new System.Windows.Forms.ComboBox();
+            this.lstJogadoresDaPartida = new System.Windows.Forms.ListBox();
+            this.label9 = new System.Windows.Forms.Label();
             this.pnlCriarPartida.SuspendLayout();
             this.pnlEntrarPartida.SuspendLayout();
             this.pnlEscolhaJogar.SuspendLayout();
@@ -381,6 +383,8 @@
             // 
             // pnlPartida
             // 
+            this.pnlPartida.Controls.Add(this.label9);
+            this.pnlPartida.Controls.Add(this.lstJogadoresDaPartida);
             this.pnlPartida.Controls.Add(this.label8);
             this.pnlPartida.Controls.Add(this.label7);
             this.pnlPartida.Controls.Add(this.label6);
@@ -638,7 +642,7 @@
             this.lstCartas.FormattingEnabled = true;
             this.lstCartas.Location = new System.Drawing.Point(38, 339);
             this.lstCartas.Name = "lstCartas";
-            this.lstCartas.Size = new System.Drawing.Size(218, 160);
+            this.lstCartas.Size = new System.Drawing.Size(132, 108);
             this.lstCartas.TabIndex = 3;
             // 
             // btnListarCartas
@@ -750,15 +754,33 @@
             this.cmbOpcoes.TabIndex = 21;
             this.cmbOpcoes.Text = "A";
             // 
+            // lstJogadoresDaPartida
+            // 
+            this.lstJogadoresDaPartida.FormattingEnabled = true;
+            this.lstJogadoresDaPartida.Location = new System.Drawing.Point(38, 483);
+            this.lstJogadoresDaPartida.Name = "lstJogadoresDaPartida";
+            this.lstJogadoresDaPartida.Size = new System.Drawing.Size(132, 134);
+            this.lstJogadoresDaPartida.TabIndex = 29;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(35, 467);
+            this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(56, 13);
+            this.label9.TabIndex = 30;
+            this.label9.Text = "Jogadores";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1264, 681);
-            this.Controls.Add(this.pnlEntrarPartida);
             this.Controls.Add(this.pnlLobby);
-            this.Controls.Add(this.pnlMenuInicial);
             this.Controls.Add(this.pnlPartida);
+            this.Controls.Add(this.pnlEntrarPartida);
+            this.Controls.Add(this.pnlMenuInicial);
             this.Controls.Add(this.lblNomeGrupo);
             this.Controls.Add(this.lblVersao);
             this.Controls.Add(this.pnlCriarPartida);
@@ -844,6 +866,8 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ComboBox cmbOpcoes;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.ListBox lstJogadoresDaPartida;
     }
 }
 

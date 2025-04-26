@@ -241,6 +241,11 @@ namespace kingMe.cs
                 {
                     lstNomePersonagens.Items.Add(nomePersonagens[i]);
                 }
+
+                for (int i = 0; i < jogadores.Length; i++)
+                {
+                    lstJogadoresDaPartida.Items.Add(jogadores[i]);
+                }
             }
 
             string retornoIniciar = Jogo.VerificarVez(idPartida);
@@ -269,7 +274,7 @@ namespace kingMe.cs
             lblRodada.Text = rodadaDaPartida;
             lblFase.Text = faseDaPartida;
 
-            tmrVerificarVez.Enabled = true;
+            tmrVerificarVez.Enabled = false;
         }
 
         private void btnListarCartas_Click(object sender, EventArgs e)
@@ -451,7 +456,6 @@ namespace kingMe.cs
             lblIdDaVez.Text = "";
             lblNomeDaVez.Text = "";
 
-
             string retornoPartida = Jogo.VerificarVez(idPartida);
             label8.Text = retornoPartida; // <--- remover dps
 
@@ -516,12 +520,12 @@ namespace kingMe.cs
                 colocarPersonagem();
             }
 
-            if (faseDaPartida == "P")
+            if (int.Parse(idJogadorDaVez) == idJogador && faseDaPartida == "P")
             {
                 PromoverPersonagemDaRodada();
             }
 
-            if (faseDaPartida == "V")
+            if (int.Parse(idJogadorDaVez) == idJogador && faseDaPartida == "V")
             {
                 if (!acabouDeVotar)
                 {
@@ -613,7 +617,85 @@ namespace kingMe.cs
 
         private void btnColocarPersonagem_Click(object sender, EventArgs e)
         {
-            colocarPersonagem();
+            if (idJogador.ToString() != idJogadorDaVez)
+            {
+                MessageBox.Show("Ocorreu um erro: \nNão é a sua vez", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Conta quantos personagens já foram colocados
+            int totalPersonagens = personagensNosSetores.Sum(s => s.Value.Count);
+
+            // Se for o 13º personagem, ele vai automaticamente para o setor 0
+            int setor = (totalPersonagens < 12) ? int.Parse(txtSetor.Text) : 0;
+
+            if (!posicaoSetores.ContainsKey(setor))
+            {
+                MessageBox.Show("Setor inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string personagem = txtPersonagem.Text.Trim();
+            if (string.IsNullOrEmpty(personagem) || personagem.Length != 1)
+            {
+                MessageBox.Show("Personagem inválido!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Se não for o 13º personagem, verifica se há espaço no setor
+            if (totalPersonagens < 12 && contagemSetores[setor] >= limiteSetores[setor])
+            {
+                MessageBox.Show("O setor está cheio!", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            lstTabuleiro.Items.Clear();
+
+            // Envia o personagem para o banco e recebe o estado atualizado do tabuleiro
+            string infoTabuleiro = Jogo.ColocarPersonagem(idJogador, senhaJogador, setor, personagem);
+            infoTabuleiro = infoTabuleiro.Replace("\r", "").Trim();
+            string[] infoSetor = infoTabuleiro.Split('\n');
+
+            // Limpa os personagens dos setores antes de atualizar
+            foreach (var key in personagensNosSetores.Keys.ToList())
+            {
+                personagensNosSetores[key].Clear();
+            }
+
+            // Atualiza os personagens com base na resposta do banco de dados
+            foreach (string item in infoSetor)
+            {
+                string[] dados = item.Split(',');
+                if (dados.Length == 2)
+                {
+                    int setorRecebido = int.Parse(dados[0].Trim());
+                    string personagemRecebido = dados[1].Trim();
+
+                    if (!personagensNosSetores.ContainsKey(setorRecebido))
+                    {
+                        personagensNosSetores[setorRecebido] = new List<string>();
+                    }
+                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
+                }
+            }
+
+            // Atualiza a contagem de personagens nos setores
+            foreach (var key in personagensNosSetores.Keys)
+            {
+                contagemSetores[key] = personagensNosSetores[key].Count;
+            }
+
+            // Atualiza a exibição no ListBox
+            foreach (var setorEntry in personagensNosSetores)
+            {
+                foreach (var personagemEntry in setorEntry.Value)
+                {
+                    lstTabuleiro.Items.Add($"Setor {setorEntry.Key}: {personagemEntry}");
+                }
+            }
+
+            // Atualiza a exibição do painel
+            pnlTeste2.Invalidate();
         }
 
         private void btnPromoverPersonagem_Click(object sender, EventArgs e)
@@ -645,7 +727,75 @@ namespace kingMe.cs
 
         private void btnVerificarVez_Click(object sender, EventArgs e)
         {
-            verificarVez();
+            lblIdDaVez.Text = "";
+            lblNomeDaVez.Text = "";
+            string retornoIniciar = Jogo.VerificarVez(idPartida);
+
+            // Dividir no primeiro \r\n encontrado
+            string[] separador = retornoIniciar.Split(new[] { "\r\n" }, 2, StringSplitOptions.None);
+
+            string infoPartida = separador[0]; // Primeira linha
+            string infoPosicao = separador.Length > 1 ? separador[1] : ""; // O resto da string
+
+            // Mostrar nome e jogador da vez
+            string[] vezInfo = infoPartida.Split(',');
+            int indice = Array.FindIndex(jogadores, elemento => elemento.StartsWith(vezInfo[0]));
+            string infoJogadorDaVez = jogadores[indice];
+            string[] jogadorDaVez = infoJogadorDaVez.Split(',');
+            idJogadorDaVez = jogadorDaVez[0];
+            nomeJogadorDaVez = jogadorDaVez[1];
+            lblIdDaVez.Text = "Id do jogador da vez:" + idJogadorDaVez;
+            lblNomeDaVez.Text = "Nome do jogador da vez:" + nomeJogadorDaVez;
+
+            //Informações do Jogo
+            string statusDaPartida = vezInfo[1];
+            string rodadaDaPartida = vezInfo[2];
+            string faseDaPartida = vezInfo[3];
+
+            lblRodada.Text = rodadaDaPartida;
+            lblFase.Text = faseDaPartida;
+
+            // Atualizar tabuleiro
+            infoPosicao = infoPosicao.Replace("\r", "");
+            string[] infoSetor = infoPosicao.Split('\n');
+
+            // Limpa os personagens dos setores antes de atualizar
+            foreach (var key in personagensNosSetores.Keys.ToList())
+            {
+                personagensNosSetores[key].Clear();
+            }
+
+            // Atualiza os personagens com base na resposta do banco de dados
+            foreach (string item in infoSetor)
+            {
+                string[] dados = item.Split(',');
+                if (dados.Length == 2)
+                {
+                    int setorRecebido = int.Parse(dados[0].Trim());
+                    string personagemRecebido = dados[1].Trim();
+
+                    if (!personagensNosSetores.ContainsKey(setorRecebido))
+                    {
+                        personagensNosSetores[setorRecebido] = new List<string>();
+                    }
+                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
+                }
+            }
+
+            // Atualiza a contagem de personagens nos setores
+            foreach (var key in personagensNosSetores.Keys)
+            {
+                contagemSetores[key] = personagensNosSetores[key].Count;
+            }
+
+            // Atualiza a exibição do painel
+            pnlTeste2.Invalidate();
+
+            lstJogadoresDaPartida.Items.Clear();
+            for (int i = 0; i < jogadores.Length; i++)
+            {
+                lstJogadoresDaPartida.Items.Add(jogadores[i]);
+            }
         }
 
         private void btnConfiguracoes_Click(object sender, EventArgs e)
@@ -662,6 +812,5 @@ namespace kingMe.cs
         {
 
         }
-
     }
 }
