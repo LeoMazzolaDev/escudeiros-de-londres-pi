@@ -274,7 +274,7 @@ namespace kingMe.cs
             lblRodada.Text = rodadaDaPartida;
             lblFase.Text = faseDaPartida;
 
-            tmrVerificarVez.Enabled = false;
+            tmrVerificarVez.Enabled = true;
         }
 
         private void btnListarCartas_Click(object sender, EventArgs e)
@@ -476,6 +476,8 @@ namespace kingMe.cs
             vezInfo[2]: rodada da partida.
             vezInfo[3]: fase da partida.
             */
+
+
             int id = Array.FindIndex(jogadores, elemento => elemento.StartsWith(vezInfo[0]));
             string infoJogadorDaVez = jogadores[id]; // id, nome, pontuação \n\r
             string[] jogadorDaVez = infoJogadorDaVez.Split(',');
@@ -501,14 +503,55 @@ namespace kingMe.cs
 
             // Atualizar tabuleiro
             infoPosicaoPersonagem = infoPosicaoPersonagem.Replace("\r", "");
-            string[] infoSetor = infoPosicaoPersonagem.Split('\n');
+            string[] infoSetor = infoPosicaoPersonagem
+                .Replace("\r", "")
+                .Split('\n')
+                .Where(linha => !string.IsNullOrWhiteSpace(linha))
+                .ToArray();
+
             /*
             infoSetor[0]: setor do personagem 1, caracter do personagem 1 
             infoSetor[1]: setor do personagem 2, caracter do personagem 2
                                     ....
             */
 
-            atualizarDicionarios(infoSetor);
+            // Limpa o dicionario que guarda cada personagem em cada setor.
+            foreach (var key in personagensNosSetores.Keys.ToList())
+            {
+                personagensNosSetores[key].Clear();
+            }
+
+            // Atualiza o dicionario com os personagens com base na resposta do banco de dados.
+            foreach (string item in infoSetor)
+            {
+                string[] dadosDoPersonagem = item.Split(',');
+                /*
+                 dados[0]: setor
+                 dados[1]: caracter
+                 */
+                if (dadosDoPersonagem.Length == 2)
+                {
+                    int setorRecebido = int.Parse(dadosDoPersonagem[0].Trim());
+                    string personagemRecebido = dadosDoPersonagem[1].Trim();
+                    personagensNosSetores[setorRecebido].Add(personagemRecebido);
+                }
+            }
+
+            // Atualiza o dicionario de contagem de personagens nos setores.
+            foreach (var key in personagensNosSetores.Keys)
+            {
+                contagemSetores[key] = personagensNosSetores[key].Count;
+            }
+
+            // Limpa e atualiza o HashSet de personagens usados com base na resposta do banco.
+            personagensUsados.Clear();
+            foreach (var lista in personagensNosSetores.Values)
+            {
+                foreach (var personagem in lista)
+                {
+                    personagensUsados.Add(personagem);
+                }
+            }
 
             // Atualiza a exibição do tabuleiro
             pnlTeste2.Invalidate();
@@ -522,7 +565,44 @@ namespace kingMe.cs
 
             if (int.Parse(idJogadorDaVez) == idJogador && faseDaPartida == "P")
             {
-                PromoverPersonagemDaRodada();
+                atualizarDicionarios(infoSetor);
+                List<(string personagem, int setorAtual, int proximoSetor)> promoviveis = new List<(string, int, int)>();
+
+                // Monta a lista de personagens que podem ser promovidos
+                foreach (var setor in personagensNosSetores.Keys)
+                {
+                    int proximoSetor = setor == 5 ? 10 : setor + 1;
+
+                    if (!limiteSetores.ContainsKey(proximoSetor) || contagemSetores[proximoSetor] >= limiteSetores[proximoSetor])
+                        continue;
+
+                    foreach (var personagem in personagensNosSetores[setor])
+                    {
+                        promoviveis.Add((personagem, setor, proximoSetor));
+                    }
+                }
+
+                if (promoviveis.Count == 0)
+                {
+                    MessageBox.Show("Nenhum personagem pode ser promovido nesta rodada.");
+                    return;
+                }
+
+                // Sorteia um personagem entre os possíveis
+                Random rand = new Random();
+                var escolhido = promoviveis[rand.Next(promoviveis.Count)];
+
+                // Atualiza os dicionários
+                personagensNosSetores[escolhido.setorAtual].Remove(escolhido.personagem);
+                contagemSetores[escolhido.setorAtual]--;
+
+                personagensNosSetores[escolhido.proximoSetor].Add(escolhido.personagem);
+                contagemSetores[escolhido.proximoSetor]++;
+
+                // Chama a função de promoção
+                Jogo.Promover(idJogador, senhaJogador, escolhido.personagem);
+
+                label7.Text = escolhido.personagem;
             }
 
             if (int.Parse(idJogadorDaVez) == idJogador && faseDaPartida == "V")
@@ -736,6 +816,7 @@ namespace kingMe.cs
 
             string infoPartida = separador[0]; // Primeira linha
             string infoPosicao = separador.Length > 1 ? separador[1] : ""; // O resto da string
+
 
             // Mostrar nome e jogador da vez
             string[] vezInfo = infoPartida.Split(',');
