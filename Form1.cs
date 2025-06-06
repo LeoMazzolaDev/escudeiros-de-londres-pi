@@ -28,6 +28,7 @@ namespace kingMe.cs
         int numeroDeNaos;
         int numeroDeNaosPartida;
         int rodadaAtual;
+        char[] iniciais;
 
         private Dictionary<string, Image> sprites = new Dictionary<string, Image>()
         {
@@ -309,7 +310,7 @@ namespace kingMe.cs
         {
             lstCartas.Items.Clear();
             string cartas = Jogo.ListarCartas(idJogador, senhaJogador);
-            char[] iniciais = cartas.ToCharArray();
+            iniciais = cartas.ToCharArray();
 
             Dictionary<char, string> nomes = new Dictionary<char, string>
             {
@@ -354,7 +355,7 @@ namespace kingMe.cs
 
             int totalPersonagens = personagensNosSetores.Sum(s => s.Value.Count);
 
-            Random rnd = new Random();
+            //Random rnd = new Random();
 
             int setor;
             if (totalPersonagens >= 12)
@@ -363,10 +364,14 @@ namespace kingMe.cs
             }
             else
             {
+                // Calcular todos os setores que e possivel colocar personagem
+                // Filtra os setores disponíveis e retorna a lista de chaves (setores)
                 List<int> setoresDisponiveis = contagemSetores
                     .Where(kv => !setoresProibidos.Contains(kv.Key) && kv.Value < limiteSetores[kv.Key])
-                    .Select(s => s.Key)
+                    .Select(kv => kv.Key) // Aqui, você está pegando as chaves (os setores)
                     .ToList();
+
+                // Aqui você tem o setor com o maior número disponível
 
                 if (setoresDisponiveis.Count == 0)
                 {
@@ -374,13 +379,16 @@ namespace kingMe.cs
                     return;
                 }
 
-                setor = setoresDisponiveis[rnd.Next(setoresDisponiveis.Count)];
+                setor = setoresDisponiveis.Max();
                 label4.Text = setor.ToString();
             }
 
-            // Filtra os personagens que ainda não foram usados
+            // Filtra os personagens disponíveis
             List<string> personagensDisponiveis = sprites.Keys
-                .Where(p => !personagensUsados.Contains(p))
+                .Where(p => !personagensUsados.Contains(p)) // Verifica se o personagem já foi usado
+                .OrderBy(p => Array.IndexOf(iniciais, p[0]) == -1) // Prioriza os personagens que estão nas iniciais
+                .ThenBy(p => Array.IndexOf(iniciais, p[0])) // Ordena os prioritários por ordem de iniciais
+                .ThenBy(p => p) // Ordena alfabeticamente o restante dos personagens
                 .ToList();
 
             if (personagensDisponiveis.Count == 0)
@@ -389,9 +397,9 @@ namespace kingMe.cs
                 return;
             }
 
-            string personagem = personagensDisponiveis[rnd.Next(personagensDisponiveis.Count)];
+            // Agora pegamos o primeiro personagem da lista ordenada
+            string personagem = personagensDisponiveis.First(); // Pega o primeiro personagem da lista ordenada
             personagensUsados.Add(personagem);
-
             label5.Text = personagem;
 
             if (string.IsNullOrEmpty(personagem) || personagem.Length != 1)
@@ -424,74 +432,96 @@ namespace kingMe.cs
         }
 
         private void PromoverPersonagemDaRodada()
+        {
+            // Lista de personagens promovíveis
+            List<(string personagem, int setorAtual, int proximoSetor)> promoviveis = new List<(string, int, int)>();
+
+            // Monta a lista de personagens que podem ser promovidos
+            foreach (var setor in personagensNosSetores.Keys)
+            {
+                int proximoSetor = setor == 5 ? 10 : setor + 1;
+
+                // Verifica se o próximo setor tem limite de alocação
+                if (!limiteSetores.ContainsKey(proximoSetor) || contagemSetores[proximoSetor] >= limiteSetores[proximoSetor])
+                    continue;
+
+                foreach (var personagem in personagensNosSetores[setor])
                 {
-                    List<(string personagem, int setorAtual, int proximoSetor)> promoviveis = new List<(string, int, int)>();
-
-                    // Monta a lista de personagens que podem ser promovidos
-                    foreach (var setor in personagensNosSetores.Keys)
-                    {
-                        int proximoSetor = setor == 5 ? 10 : setor + 1;
-
-                        if (!limiteSetores.ContainsKey(proximoSetor) || contagemSetores[proximoSetor] >= limiteSetores[proximoSetor])
-                            continue;
-
-                        foreach (var personagem in personagensNosSetores[setor])
-                        {
-                            promoviveis.Add((personagem, setor, proximoSetor));
-                        }
-                    }
-
-                    if (promoviveis.Count == 0)
-                    {
-                        MessageBox.Show("Nenhum personagem pode ser promovido nesta rodada.");
-                        return;
-                    }
-
-                    // Sorteia um personagem entre os possíveis
-                    Random rand = new Random();
-                    var escolhido = promoviveis[rand.Next(promoviveis.Count)];
-
-                    // Atualiza os dicionários
-                    personagensNosSetores[escolhido.setorAtual].Remove(escolhido.personagem);
-                    contagemSetores[escolhido.setorAtual]--;
-
-                    personagensNosSetores[escolhido.proximoSetor].Add(escolhido.personagem);
-                    contagemSetores[escolhido.proximoSetor]++;
-
-                    // Chama a função de promoção
-                    Jogo.Promover(idJogador, senhaJogador, escolhido.personagem);
-
-                    label7.Text = escolhido.personagem;
+                    promoviveis.Add((personagem, setor, proximoSetor));
                 }
+            }
+
+            if (promoviveis.Count == 0)
+            {
+                MessageBox.Show("Nenhum personagem pode ser promovido nesta rodada.");
+                return;
+            }
+
+            // Ordenar a lista de promovíveis, dando prioridade aos personagens da lista 'iniciais'
+            var promoviveisComPrioridade = promoviveis
+                .OrderBy(p => Array.IndexOf(iniciais, p.personagem[0]) == -1) // Coloca os prioritários primeiro
+                .ThenBy(p => Array.IndexOf(iniciais, p.personagem[0])) // Ordena alfabeticamente entre os prioritários
+                .ToList();
+
+            // Pega o primeiro personagem da lista com maior prioridade
+            var escolhido = promoviveisComPrioridade.First();  // Pega o personagem prioritário da lista
+
+            // Atualiza os dicionários
+            personagensNosSetores[escolhido.setorAtual].Remove(escolhido.personagem);
+            contagemSetores[escolhido.setorAtual]--;
+
+            personagensNosSetores[escolhido.proximoSetor].Add(escolhido.personagem);
+            contagemSetores[escolhido.proximoSetor]++;
+
+            // Chama a função de promoção
+            Jogo.Promover(idJogador, senhaJogador, escolhido.personagem);
+
+            // Atualiza a interface com o personagem promovido
+            label7.Text = escolhido.personagem;
+        }
+
 
         private void Votar()
         {
             string voto;
 
-            if(numeroDeNaos > 0) 
+            // Verifica se existe algum personagem no setor 10
+            if (personagensNosSetores.ContainsKey(10) && personagensNosSetores[10].Count > 0)
             {
-                Random sorteio = new Random();
-                int votoSN = sorteio.Next(0, 2);
+                // Pega o personagem que está no setor 10
+                string personagemVotado = personagensNosSetores[10][0]; // Supondo que só haja um personagem no setor 10
 
-                voto = votoSN == 0 ? "N" : "S";
-
-                if (voto == "N")
+                // Se ainda houver votos "N" disponíveis
+                if (numeroDeNaos > 0)
                 {
-                    numeroDeNaos--;
+                    // Verifica se o personagem votado está na lista 'iniciais'
+                    if (iniciais.Contains(personagemVotado[0])) // Verifica pela primeira letra do nome do personagem
+                    {
+                        voto = "S"; // Vota "S" se o personagem está na lista 'iniciais'
+                    }
+                    else
+                    {
+                        voto = "N"; // Vota "N" se o personagem não está na lista 'iniciais'
+                        numeroDeNaos--; // Decrementa o número de votos "N" restantes
+                    }
                 }
+                else
+                {
+                    // Se não houver votos "N" restantes, vota sempre "S"
+                    voto = "S";
+                }
+
+                // Chama a função de votação com o voto determinado
+                string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
+                label7.Text = voto; // Atualiza a interface com o voto
+                acabouDeVotar = true; // Marca que o jogador já votou
             }
-            else 
-            {
-                voto = "S";
-            }
-           
-            string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
-            label7.Text = voto;
-            acabouDeVotar = true;
         }
 
         private void verificarVez()
         {
+            string cartas = Jogo.ListarCartas(idJogador, senhaJogador);
+            iniciais = cartas.ToCharArray();
             // Labels com infos do jogador
             lblIdDaVez.Text = "";
             lblNomeDaVez.Text = "";
@@ -613,44 +643,62 @@ namespace kingMe.cs
 
             if (int.Parse(idJogadorDaVez) == idJogador && faseDaPartida == "P")
             {
-                atualizarDicionarios(infoSetor);
-                List<(string personagem, int setorAtual, int proximoSetor)> promoviveis = new List<(string, int, int)>();
+                // Atualizar tabuleiro
+                infoPosicaoPersonagem = infoPosicaoPersonagem.Replace("\r", "");
+                infoSetor = infoPosicaoPersonagem
+                    .Replace("\r", "")
+                    .Split('\n')
+                    .Where(linha => !string.IsNullOrWhiteSpace(linha))
+                    .ToArray();
 
-                // Monta a lista de personagens que podem ser promovidos
-                foreach (var setor in personagensNosSetores.Keys)
+                /*
+                infoSetor[0]: setor do personagem 1, caracter do personagem 1 
+                infoSetor[1]: setor do personagem 2, caracter do personagem 2
+                                        ....
+                */
+
+                // Limpa o dicionario que guarda cada personagem em cada setor.
+                foreach (var key in personagensNosSetores.Keys.ToList())
                 {
-                    int proximoSetor = setor == 5 ? 10 : setor + 1;
+                    personagensNosSetores[key].Clear();
+                }
 
-                    if (!limiteSetores.ContainsKey(proximoSetor) || contagemSetores[proximoSetor] >= limiteSetores[proximoSetor])
-                        continue;
-
-                    foreach (var personagem in personagensNosSetores[setor])
+                // Atualiza o dicionario com os personagens com base na resposta do banco de dados.
+                foreach (string item in infoSetor)
+                {
+                    string[] dadosDoPersonagem = item.Split(',');
+                    /*
+                     dados[0]: setor
+                     dados[1]: caracter
+                     */
+                    if (dadosDoPersonagem.Length == 2)
                     {
-                        promoviveis.Add((personagem, setor, proximoSetor));
+                        int setorRecebido = int.Parse(dadosDoPersonagem[0].Trim());
+                        string personagemRecebido = dadosDoPersonagem[1].Trim();
+                        personagensNosSetores[setorRecebido].Add(personagemRecebido);
                     }
                 }
 
-                if (promoviveis.Count == 0)
+                // Atualiza o dicionario de contagem de personagens nos setores.
+                foreach (var key in personagensNosSetores.Keys)
                 {
-                    MessageBox.Show("Nenhum personagem pode ser promovido nesta rodada.");
-                    return;
+                    contagemSetores[key] = personagensNosSetores[key].Count;
                 }
 
-                // Sorteia um personagem entre os possíveis
-                Random rand = new Random();
-                var escolhido = promoviveis[rand.Next(promoviveis.Count)];
+                // Limpa e atualiza o HashSet de personagens usados com base na resposta do banco.
+                personagensUsados.Clear();
+                foreach (var lista in personagensNosSetores.Values)
+                {
+                    foreach (var personagem in lista)
+                    {
+                        personagensUsados.Add(personagem);
+                    }
+                }
 
-                // Atualiza os dicionários
-                personagensNosSetores[escolhido.setorAtual].Remove(escolhido.personagem);
-                contagemSetores[escolhido.setorAtual]--;
+                // Atualiza a exibição do tabuleiro
+                pnlTeste2.Invalidate();
 
-                personagensNosSetores[escolhido.proximoSetor].Add(escolhido.personagem);
-                contagemSetores[escolhido.proximoSetor]++;
-
-                // Chama a função de promoção
-                Jogo.Promover(idJogador, senhaJogador, escolhido.personagem);
-
-                label7.Text = escolhido.personagem;
+                PromoverPersonagemDaRodada();
             }
 
             if (int.Parse(idJogadorDaVez) == idJogador && faseDaPartida == "V")
