@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,9 @@ namespace kingMe.cs
         private string idJogadorDaVez;
         private string nomeJogadorDaVez;
         private bool acabouDeVotar;
+        int numeroDeNaos;
+        int numeroDeNaosPartida;
+        int rodadaAtual;
 
         private Dictionary<string, Image> sprites = new Dictionary<string, Image>()
         {
@@ -106,6 +110,8 @@ namespace kingMe.cs
             {
                 pnlCriarPartida.Visible = false;
                 pnlEntrarPartida.Visible = true;
+
+                Jogo.ListarSetores();
             }
         }
 
@@ -230,6 +236,25 @@ namespace kingMe.cs
             }
             else 
             {
+                switch (jogadores.Length)
+                {
+                    case 2:
+                        numeroDeNaos = 6;
+                        numeroDeNaosPartida = 6;
+                        break;
+                    case 3:
+                        numeroDeNaos = 4;
+                        numeroDeNaosPartida = 4;
+                        break;
+                    case 4:
+                        numeroDeNaos = 3;
+                        numeroDeNaosPartida = 3;
+                        break;
+                    default:
+                        numeroDeNaos = 2;
+                        numeroDeNaosPartida = 2;
+                        break;
+                }
                 pnlLobby.Visible = false;
                 pnlPartida.Visible = true;
                 Jogo.Iniciar(idJogador, senhaJogador);
@@ -271,8 +296,11 @@ namespace kingMe.cs
             string rodadaDaPartida = vezInfo[2];
             string faseDaPartida = vezInfo[3];
 
+            
             lblRodada.Text = rodadaDaPartida;
             lblFase.Text = faseDaPartida;
+
+
 
             tmrVerificarVez.Enabled = true;
         }
@@ -440,11 +468,23 @@ namespace kingMe.cs
         {
             string voto;
 
-            Random sorteio = new Random();
-            int votoSN = sorteio.Next(0, 2);
+            if(numeroDeNaos > 0) 
+            {
+                Random sorteio = new Random();
+                int votoSN = sorteio.Next(0, 2);
 
-            voto = votoSN == 0 ? "N" : "S";
+                voto = votoSN == 0 ? "N" : "S";
 
+                if (voto == "N")
+                {
+                    numeroDeNaos--;
+                }
+            }
+            else 
+            {
+                voto = "S";
+            }
+           
             string retorno = Jogo.Votar(idJogador, senhaJogador, voto);
             label7.Text = voto;
             acabouDeVotar = true;
@@ -500,6 +540,14 @@ namespace kingMe.cs
 
             lblRodada.Text = rodadaDaPartida;
             lblFase.Text = faseDaPartida;
+
+            if (int.Parse(rodadaDaPartida) != rodadaAtual) 
+            {
+                numeroDeNaos = numeroDeNaosPartida;
+            }
+
+            lblNumeroDeNaos.Text = numeroDeNaos.ToString();
+            lblNumeroDeNaosPartida.Text = numeroDeNaosPartida.ToString();
 
             // Atualizar tabuleiro
             infoPosicaoPersonagem = infoPosicaoPersonagem.Replace("\r", "");
@@ -617,6 +665,18 @@ namespace kingMe.cs
                     acabouDeVotar = false; // Reseta para próxima vez
                 }
             }
+
+            string retorno = Jogo.ListarJogadores(idPartida);
+            retorno = retorno.Replace("\r", "");
+            jogadores = retorno.Split('\n');
+
+            lstJogadoresDaPartida.Items.Clear();
+            for (int i = 0; i < jogadores.Length; i++)
+            {
+                lstJogadoresDaPartida.Items.Add(jogadores[i]);
+            }
+
+            rodadaAtual = int.Parse(rodadaDaPartida);
         }
 
         private void atualizarDicionarios(string[] infoSetor)
